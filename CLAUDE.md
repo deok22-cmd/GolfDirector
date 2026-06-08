@@ -37,16 +37,18 @@ GolfDirector/
 │  ├─ schema.js           # TRIP_JSON_SCHEMA(structured outputs) + SYSTEM_PROMPT
 │  ├─ store.js            # trips.json 파일 기반 간이 저장
 │  └─ .env.example        # ANTHROPIC_API_KEY, PORT
-└─ frontend/              # 웹 대시보드 (SPA · Tailwind Play CDN)
-   ├─ index.html          # 국가 탭 + 상태 필터 + 매트릭스 + 백엔드 연결 배지
-   ├─ mockData.js         # 사양서 스키마 기반 더미 데이터 + 환율/통화/국가 카탈로그
-   └─ app.js              # 렌더링/인터랙션 + 백엔드 /api/trips 로드(미실행 시 mock 폴백)
+└─ frontend/
+   ├─ index.html          # ★메인 = 간단 계산기 (설치 0, 백엔드 불필요)
+   ├─ calculator.js       # 계산기 로직: 1인/팀 N빵 환산, 실시간 환율, 카톡, localStorage 기록
+   ├─ dashboard.html      # 고급(매트릭스) 보기 — 국가탭·상태필터·AI견적분석 (app.js 사용)
+   ├─ app.js              # 대시보드 렌더링/인터랙션 + 백엔드 /api/trips 연동
+   └─ mockData.js         # FX_RATES(폴백)·CURRENCY_SYMBOL·COUNTRY_CATALOG·MOCK_TRIPS
 ```
 
 ## 4. 실행 방법
-- **백엔드**(Phase 2): `cd backend` → `npm install` → `.env.example`를 `.env`로 복사 후 `ANTHROPIC_API_KEY` 입력 → `npm start` (http://localhost:8787)
-- **대시보드**: `frontend/index.html` 을 브라우저로 직접 열기 (백엔드 실행 중이면 저장된 여행 자동 로드, 아니면 mockData)
-- **익스텐션**: `chrome://extensions` → 개발자 모드 ON → "압축해제된 확장 프로그램 로드" → `extension/` 선택. 설정(⚙️)에서 백엔드 URL 확인.
+- **가장 쉬움(권장)**: `frontend/index.html` 더블클릭 → **계산기 바로 사용** (설치·서버·키 전부 불필요). 실시간 환율은 인터넷만 있으면 자동.
+- **고급/AI 기능**: `골프총무-실행.bat` 더블클릭(또는 `cd backend && npm install && npm start`). `dashboard.html`의 매트릭스·AI 견적분석·서버저장은 백엔드 필요(+ `.env`에 ANTHROPIC_API_KEY).
+- **익스텐션**(선택): `chrome://extensions` → 개발자 모드 → `extension/` 로드. (AI 수집은 대시보드에도 흡수돼 있어 필수 아님)
 
 ## 5. 데이터 스키마 & 핵심 규칙 (mockData.js)
 - **Trip 엔티티**: `trip_id, title, country(한글국가명), local_currency, status, total_days, party_size, current_fx_rate, created_at, summary{...}, itinerary[]`
@@ -71,11 +73,16 @@ GolfDirector/
   - **수동 입력**(필수 요구): "＋ 새 여행 직접 만들기" 모달 → 빈 일정표 생성, 셀 더블클릭으로 금액 직접 입력/수정, "＋ 일차 추가". 모든 편집은 백엔드에 영속(`persistTrip`), 서버 꺼지면 메모리 폴백.
   - **단일 주소**: 백엔드가 `express.static`으로 대시보드도 서빙 → `http://localhost:8787` 한 주소. (배포 시 그대로 한 URL)
   - **원클릭 실행**: `골프총무-실행.bat`(Node확인→install→키입력→서버→대시보드). 대시보드는 서버 켜질 때까지 자동 재연결.
-- ⬜ **Phase 3 (예정)**: ① **클라우드 배포**(서버를 Render/Railway 등에 올려 총무는 URL 접속만, 키는 운영자 1개 공유) ② N빵 정산 ③ 실시간 환율 API ④ 파일저장→DB ⑤ (선택) 크롬 웹스토어 등록
+- ✅ **Phase 2.6 (완료) — 메인을 "간단 계산기"로 전환 (중요 피벗)**:
+  - **피드백 반영**: "총무가 배워서 쓰느니 계산기가 낫다" → 매트릭스 대시보드를 메인에서 내리고, **숫자 몇 개 → 1인당 즉시 + 카톡 복사** 한 화면(`index.html`+`calculator.js`)을 메인으로. 매트릭스/AI는 `dashboard.html`(고급)로 이동.
+  - **계산기 핵심**: 항목별 금액·통화 입력 → 실시간 환율 자동 환산 → 1인당/일행합계 즉시. **항목마다 1인/팀(N빵) 토글**(팀 비용은 인원수로 자동 분배) = 계산기 대비 진짜 차별점.
+  - **실시간 환율**: `open.er-api.com/v6/latest/USD`(키 불필요, CORS OK). `1c = (KRW/USD)/(c/USD)`. 실패 시 mockData의 FX_RATES 폴백, 사용자 직접 수정 가능(manualFx). ※ 기본값(THB 37.5)은 실제(≈47)와 차이 커서 실시간이 중요.
+  - **저장**: 계산기는 localStorage(서버·키 불필요). 카톡 공지 자동 생성.
+- ⬜ **Phase 3 (예정)**: ① **클라우드 배포**(서버 URL만 주면 끝) ② N빵 정산 고도화(개인별 지출 입력/차액) ③ 파일저장→DB ④ (선택) 크롬 웹스토어 등록
 
 ## 8. 다음에 할 일 (Next)
-- 로컬 검증: `골프총무-실행.bat` 더블클릭 → 새 여행 직접 만들기 / 셀 금액 입력 / 견적서 AI 추가 동작 확인
-- 검증 후 Phase 3: **클라우드 배포**(설치 없는 웹앱 완성)를 최우선으로 — 그래야 진짜 총무들에게 URL만 주면 됨
+- 로컬 검증: `frontend/index.html` 더블클릭 → 계산기로 금액 입력·실시간환율·카톡복사·기록저장 확인 (설치 0)
+- 계산기가 "계산기보다 쉽다"가 확인되면 → 클라우드 배포(설치 없는 웹앱 완성)로
 
 ## 10. 입력 소스 — 멀티모달 설계 방침 (중요)
 여행 정보는 브라우저 텍스트로만 오지 않는다. 실제로는 **이미지/PDF/메신저 텍스트파일**이 더 흔하다.

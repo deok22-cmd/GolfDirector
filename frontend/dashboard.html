@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>골프총무 · 고급(매트릭스) 보기</title>
+
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Pretendard', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } },
+    };
+  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-5 py-4">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-xl shadow-sm">⛳</div>
+          <div>
+            <h1 class="text-lg font-extrabold leading-tight">골프총무 <span class="text-slate-400 font-medium text-sm">· 고급(매트릭스) 보기</span></h1>
+            <p class="text-[11px] text-slate-400">일정별 비용 매트릭스 · 국가/상태 관리 · AI 견적 분석</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <a href="index.html" class="px-2.5 py-1 rounded-full bg-slate-800 text-white font-semibold hover:bg-slate-700">← 간단 계산기</a>
+          <span id="backend-badge" class="hidden px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold">서버 연결됨</span>
+          <span class="hidden sm:inline px-2.5 py-1 rounded-full bg-slate-100">검색 결과 <b id="result-count" class="text-slate-700">0건</b></span>
+        </div>
+      </div>
+
+      <nav class="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1" id="country-tabs"></nav>
+      <div class="mt-3 flex items-center gap-2">
+        <span class="text-[11px] font-semibold text-slate-400 mr-1">상태</span>
+        <div class="flex items-center gap-1.5" id="status-filter"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-5 py-6 space-y-6">
+    <section>
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wide">여행 선택</h2>
+        <div class="flex gap-2">
+          <button id="btn-new-trip" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm">＋ 새 여행 직접 만들기</button>
+          <button id="btn-upload" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:border-emerald-400 transition">📷 견적서로 추가 (AI)</button>
+        </div>
+      </div>
+      <div class="flex items-stretch gap-3 overflow-x-auto pb-2" id="trip-list"></div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5" id="matrix-panel"></section>
+  </main>
+
+  <!-- ===== 모달: 새 여행 직접 만들기 ===== -->
+  <div id="modal-new-trip" class="hidden fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-extrabold text-slate-800">새 여행 만들기</h3>
+        <button data-close-modal class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">여행 제목</label>
+          <input id="nt-title" type="text" placeholder="예: 2026 가을 태국 파타야 골프" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">국가</label>
+            <select id="nt-country" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200"></select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">현지 통화</label>
+            <input id="nt-currency" type="text" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">일수</label>
+            <input id="nt-days" type="number" min="1" value="3" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">인원</label>
+            <input id="nt-party" type="number" min="1" value="4" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">상태</label>
+            <select id="nt-status" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200">
+              <option value="PLANNING">시뮬레이션 중</option>
+              <option value="COMPLETED">다녀온 여행</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">환율 (현지통화 1단위당 원화, 비우면 자동)</label>
+          <input id="nt-fx" type="number" step="0.001" placeholder="예: 37.5" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-5">
+        <button id="nt-create" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2.5 rounded-lg">만들기</button>
+        <button data-close-modal class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold rounded-lg">취소</button>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-3">💡 만든 뒤 매트릭스 셀을 <b>더블클릭</b>하면 금액을 직접 입력할 수 있어요.</p>
+    </div>
+  </div>
+
+  <!-- ===== 모달: 견적서로 추가 (AI) ===== -->
+  <div id="modal-upload" class="hidden fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-extrabold text-slate-800">견적서로 여행 추가 (AI)</h3>
+        <button data-close-modal class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+      <div id="up-dropzone" class="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center text-xs text-slate-400 mb-3 transition">
+        견적서 <b>사진·PDF</b>를 끌어다 놓거나
+        <label class="text-emerald-600 font-semibold cursor-pointer underline">파일 선택
+          <input id="up-file" type="file" class="hidden" multiple accept="image/*,application/pdf,.txt,text/plain" />
+        </label><br />
+        스크린샷은 <b>Ctrl+V</b> · 텍스트는 아래에 붙여넣기
+      </div>
+      <textarea id="up-text" rows="3" placeholder="여행사 안내 텍스트를 여기에 붙여넣어도 됩니다" class="w-full text-xs border border-slate-200 rounded-lg p-2 mb-1 focus:outline-none focus:ring-2 focus:ring-emerald-200 resize-none"></textarea>
+      <div id="up-attachments" class="space-y-1.5 mb-3"></div>
+      <button id="up-analyze" disabled class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold py-2.5 rounded-lg">🔍 AI 분석</button>
+      <div id="up-result" class="hidden mt-3">
+        <div class="text-[11px] font-bold text-slate-500 mb-1">분석 결과 미리보기</div>
+        <pre id="up-json" class="text-[11px] bg-slate-900 text-emerald-200 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap"></pre>
+        <button id="up-add" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold py-2.5 rounded-lg">＋ 이 여행 추가</button>
+      </div>
+      <div id="up-status" class="text-[11px] text-slate-400 mt-2"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg opacity-0 translate-y-2 transition-all duration-300 pointer-events-none"></div>
+
+  <script src="mockData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

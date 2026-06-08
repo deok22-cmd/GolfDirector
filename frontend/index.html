@@ -3,177 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>골프총무 (Golf Director) · 대시보드</title>
-
-  <!-- Tailwind CSS (Play CDN — Phase 1 프로토타이핑용) -->
+  <title>골프 비용 계산기 · 골프총무</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Pretendard', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-        },
-      },
-    };
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Pretendard', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
   </script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
-  />
-  <style>
-    /* 가로 스크롤바 미세 스타일 */
-    ::-webkit-scrollbar { height: 8px; width: 8px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 </head>
 
 <body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen">
+  <div class="max-w-2xl mx-auto px-4 py-5">
 
-  <!-- ============================= 상단 헤더 ============================= -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
-    <div class="max-w-7xl mx-auto px-5 py-4">
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-xl shadow-sm">⛳</div>
-          <div>
-            <h1 class="text-lg font-extrabold leading-tight">골프총무 <span class="text-slate-400 font-medium text-sm">Golf Director</span></h1>
-            <p class="text-[11px] text-slate-400">해외 골프 여행 일정 기반 비용 관리 & 시뮬레이터</p>
-          </div>
-        </div>
-        <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-          <span id="backend-badge" class="hidden px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold">백엔드 연결됨</span>
-          <span class="px-2.5 py-1 rounded-full bg-slate-100">검색 결과 <b id="result-count" class="text-slate-700">0건</b></span>
-        </div>
-      </div>
-
-      <!-- 국가별 탭 -->
-      <nav class="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1" id="country-tabs"></nav>
-
-      <!-- 과거/미래 상태 필터 -->
-      <div class="mt-3 flex items-center gap-2">
-        <span class="text-[11px] font-semibold text-slate-400 mr-1">상태</span>
-        <div class="flex items-center gap-1.5" id="status-filter"></div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ============================= 본문 ============================= -->
-  <main class="max-w-7xl mx-auto px-5 py-6 space-y-6">
-
-    <!-- 여행 선택 카드 리스트 -->
-    <section>
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wide">여행 선택</h2>
-        <div class="flex gap-2">
-          <button id="btn-new-trip"
-            class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm">
-            ＋ 새 여행 직접 만들기
-          </button>
-          <button id="btn-upload"
-            class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:border-emerald-400 transition">
-            📷 견적서로 추가 (AI)
-          </button>
-        </div>
-      </div>
-      <div class="flex items-stretch gap-3 overflow-x-auto pb-2" id="trip-list"></div>
-    </section>
-
-    <!-- 일정별 비용 매트릭스 (핵심 UI) -->
-    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5" id="matrix-panel"></section>
-
-  </main>
-
-  <!-- ===== 모달: 새 여행 직접 만들기 ===== -->
-  <div id="modal-new-trip" class="hidden fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-extrabold text-slate-800">새 여행 만들기</h3>
-        <button data-close-modal class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
-      </div>
-      <div class="space-y-3">
+    <!-- 헤더 -->
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-lg shadow-sm">⛳</div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">여행 제목</label>
-          <input id="nt-title" type="text" placeholder="예: 2026 가을 태국 파타야 골프"
+          <h1 class="text-base font-extrabold leading-tight">골프 비용 계산기</h1>
+          <p class="text-[11px] text-slate-400">숫자만 넣으면 1인당 얼마인지 바로 나와요</p>
+        </div>
+      </div>
+      <a href="dashboard.html" class="text-[11px] text-slate-400 hover:text-slate-600 underline">고급(매트릭스) 보기 →</a>
+    </header>
+
+    <!-- 입력 카드 -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+      <div class="flex flex-wrap items-end gap-3 mb-4">
+        <div class="flex-1 min-w-[160px]">
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">여행 이름 (선택)</label>
+          <input id="trip-title" type="text" placeholder="예: 26년 가을 태국 골프"
             class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">국가</label>
-            <select id="nt-country" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200"></select>
+        <div class="w-24">
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">인원</label>
+          <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+            <button id="ppl-minus" class="px-2.5 py-2 text-slate-500 hover:bg-slate-100 text-lg leading-none">−</button>
+            <input id="party-size" type="number" min="1" value="4"
+              class="w-full text-center text-sm py-2 focus:outline-none" />
+            <button id="ppl-plus" class="px-2.5 py-2 text-slate-500 hover:bg-slate-100 text-lg leading-none">＋</button>
           </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">현지 통화</label>
-            <input id="nt-currency" type="text" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-          </div>
-        </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">일수</label>
-            <input id="nt-days" type="number" min="1" value="3" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">인원</label>
-            <input id="nt-party" type="number" min="1" value="4" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">상태</label>
-            <select id="nt-status" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200">
-              <option value="PLANNING">시뮬레이션 중</option>
-              <option value="COMPLETED">다녀온 여행</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">환율 (현지통화 1단위당 원화, 비우면 자동)</label>
-          <input id="nt-fx" type="number" step="0.001" placeholder="예: 37.5"
-            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </div>
       </div>
-      <div class="flex gap-2 mt-5">
-        <button id="nt-create" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2.5 rounded-lg">만들기</button>
-        <button data-close-modal class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold rounded-lg">취소</button>
-      </div>
-      <p class="text-[11px] text-slate-400 mt-3">💡 만든 뒤 매트릭스 셀을 <b>더블클릭</b>하면 금액을 직접 입력할 수 있어요.</p>
-    </div>
-  </div>
 
-  <!-- ===== 모달: 견적서로 추가 (AI) ===== -->
-  <div id="modal-upload" class="hidden fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-extrabold text-slate-800">견적서로 여행 추가 (AI)</h3>
-        <button data-close-modal class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      <!-- 항목 헤더 -->
+      <div class="hidden sm:grid grid-cols-[1fr_120px_88px_92px_28px] gap-2 px-1 mb-1 text-[10px] font-bold text-slate-400">
+        <span>항목</span><span class="text-right">금액</span><span>통화</span><span>1인/팀</span><span></span>
       </div>
-      <div id="up-dropzone" class="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center text-xs text-slate-400 mb-3 transition">
-        견적서 <b>사진·PDF</b>를 끌어다 놓거나
-        <label class="text-emerald-600 font-semibold cursor-pointer underline">파일 선택
-          <input id="up-file" type="file" class="hidden" multiple accept="image/*,application/pdf,.txt,text/plain" />
-        </label><br />
-        스크린샷은 <b>Ctrl+V</b> · 텍스트는 아래에 붙여넣기
+      <div id="rows" class="space-y-2"></div>
+
+      <button id="add-row" class="mt-3 w-full border-2 border-dashed border-slate-300 text-slate-500 text-sm font-semibold rounded-lg py-2 hover:border-emerald-400 hover:text-emerald-600 transition">
+        ＋ 항목 추가
+      </button>
+
+      <!-- 환율 -->
+      <div class="mt-4 pt-4 border-t border-slate-100">
+        <div class="text-[11px] font-bold text-slate-500 mb-2">환율 <span class="font-normal text-slate-400">(자동 입력 · 직접 수정 가능, 현지통화 1단위 = 원)</span></div>
+        <div id="fx-area" class="flex flex-wrap gap-2"></div>
       </div>
-      <textarea id="up-text" rows="3" placeholder="여행사 안내 텍스트를 여기에 붙여넣어도 됩니다"
-        class="w-full text-xs border border-slate-200 rounded-lg p-2 mb-1 focus:outline-none focus:ring-2 focus:ring-emerald-200 resize-none"></textarea>
-      <div id="up-attachments" class="space-y-1.5 mb-3"></div>
-      <button id="up-analyze" disabled class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold py-2.5 rounded-lg">🔍 AI 분석</button>
-      <div id="up-result" class="hidden mt-3">
-        <div class="text-[11px] font-bold text-slate-500 mb-1">분석 결과 미리보기</div>
-        <pre id="up-json" class="text-[11px] bg-slate-900 text-emerald-200 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap"></pre>
-        <button id="up-add" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold py-2.5 rounded-lg">＋ 이 여행 추가</button>
-      </div>
-      <div id="up-status" class="text-[11px] text-slate-400 mt-2"></div>
     </div>
+
+    <!-- 결과 카드 -->
+    <div class="bg-emerald-600 text-white rounded-2xl shadow-sm p-5 mt-4">
+      <div class="flex items-end justify-between flex-wrap gap-2">
+        <div>
+          <div class="text-[11px] text-emerald-100 font-semibold">1인당 예상 총비용</div>
+          <div id="per-person" class="text-3xl font-extrabold leading-tight">₩0</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] text-emerald-100">일행 <span id="ppl-label">4</span>명 합계</div>
+          <div id="group-total" class="text-lg font-bold">₩0</div>
+        </div>
+      </div>
+      <div id="warn-missing" class="hidden mt-2 text-[11px] bg-white/15 rounded-lg px-3 py-1.5">⚠️ 금액이 비어있는 항목이 있어요 — 현지에서 추가될 수 있어요.</div>
+    </div>
+
+    <!-- 액션 -->
+    <div class="grid grid-cols-2 gap-2 mt-3">
+      <button id="btn-kakao" class="bg-yellow-400 text-slate-900 font-bold text-sm py-3 rounded-xl hover:bg-yellow-300 transition shadow-sm">📋 카톡 공지 복사</button>
+      <button id="btn-save" class="bg-slate-800 text-white font-bold text-sm py-3 rounded-xl hover:bg-slate-900 transition shadow-sm">💾 기록 저장</button>
+    </div>
+
+    <!-- 저장된 기록 -->
+    <div class="mt-5">
+      <button id="toggle-saved" class="text-xs font-bold text-slate-500 hover:text-slate-700">📁 저장된 기록 <span id="saved-count" class="text-slate-400"></span></button>
+      <div id="saved-list" class="hidden mt-2 space-y-2"></div>
+    </div>
+
+    <p class="text-center text-[11px] text-slate-400 mt-6">설치 없이 바로 쓰는 계산기예요. 견적서 사진을 자동으로 읽어주는 기능은 「고급 보기」에 있어요.</p>
   </div>
 
   <!-- 토스트 -->
-  <div id="toast"
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg
-    opacity-0 translate-y-2 transition-all duration-300 pointer-events-none"></div>
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg opacity-0 translate-y-2 transition-all duration-300 pointer-events-none"></div>
 
-  <!-- 스크립트 -->
   <script src="mockData.js"></script>
-  <script src="app.js"></script>
+  <script src="calculator.js"></script>
 </body>
 </html>

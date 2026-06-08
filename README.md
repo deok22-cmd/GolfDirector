@@ -27,20 +27,24 @@ GolfDirector/
 
 ## 실행 방법
 
-### 백엔드 (AI 정제 서버)
+### ⭐ 가장 쉽게 — 간단 계산기 (설치 0)
+`frontend/index.html` 을 더블클릭하세요. 끝.
+숫자 몇 개 넣으면 1인당 비용이 바로 나오고(실시간 환율 자동), 카톡 공지까지 복사됩니다.
+설치도, 서버도, API 키도 필요 없습니다.
+
+### 고급 기능 (AI 견적 분석 · 매트릭스 · 서버 저장)
+`골프총무-실행.bat` 더블클릭 → 처음 한 번만 준비(설치+키 입력) 후 `http://localhost:8787` 가 열립니다.
+또는 수동으로:
 ```bash
 cd backend
 npm install
 cp .env.example .env        # PowerShell: Copy-Item .env.example .env
-# .env 에 ANTHROPIC_API_KEY 입력
+# .env 에 ANTHROPIC_API_KEY 입력 (AI 분석에만 필요)
 npm start                   # http://localhost:8787
 ```
+계산기 화면 우상단 「고급(매트릭스) 보기 →」 또는 `dashboard.html` 로 이동.
 
-### 웹 대시보드
-`frontend/index.html` 을 브라우저로 직접 열면 됩니다. (Tailwind는 Play CDN 사용)
-백엔드가 실행 중이면 저장된 여행을 자동 로드하고, 아니면 mockData로 동작합니다.
-
-### 크롬 익스텐션
+### 크롬 익스텐션 (선택)
 1. 크롬 주소창에 `chrome://extensions` 입력
 2. 우측 상단 **개발자 모드** 켜기
 3. **압축해제된 확장 프로그램을 로드합니다** 클릭 → `extension/` 폴더 선택
