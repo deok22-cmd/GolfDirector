@@ -8,10 +8,12 @@
   const { FX_RATES, CURRENCY_SYMBOL, COST_COLUMNS, COUNTRY_CATALOG, MOCK_TRIPS } =
     window.GolfDirectorData;
 
-  // 백엔드에서 저장된 여행을 불러오고, 미실행이면 mockData로 폴백.
+  // 백엔드 주소: 백엔드가 직접 서빙하면 같은 주소(origin), 파일로 열면 localhost.
   const DASHBOARD_BACKEND =
-    localStorage.getItem("gdBackend") || "http://localhost:8787";
+    localStorage.getItem("gdBackend") ||
+    (location.protocol === "file:" ? "http://localhost:8787" : location.origin);
   let TRIPS = MOCK_TRIPS.slice();
+  let backendOnline = false;
 
   // ---------------------------------------------------------------------------
   // 애플리케이션 상태
@@ -328,7 +330,11 @@
         </table>
       </div>
 
-      <p class="text-[11px] text-slate-400 mt-2">💡 셀을 더블 클릭하면 금액을 수정할 수 있습니다. (Phase 1 데모)</p>
+      <div class="flex items-center justify-between mt-2">
+        <p class="text-[11px] text-slate-400">💡 셀을 <b>더블클릭</b>하면 금액을 직접 입력/수정할 수 있습니다.</p>
+        <button onclick="window.GolfDirector.addDay('${trip.trip_id}')"
+          class="text-[11px] font-bold text-emerald-700 hover:underline">＋ 일차 추가</button>
+      </div>
 
       ${renderSummary(trip, dayTotalKrwAll)}
     `;
@@ -361,16 +367,19 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 인터랙션: 셀 더블클릭 편집 (Phase 1 데모 — 메모리상 수정)
+  // 인터랙션: 셀 더블클릭 편집 (수동 비용 입력) — 백엔드에 저장
   // ---------------------------------------------------------------------------
-  function editCell(td) {
+  async function editCell(td) {
     const { trip, day, col } = td.dataset;
     const tripObj = TRIPS.find((t) => t.trip_id === trip);
     const dayObj = tripObj.itinerary.find((d) => d.day === Number(day));
-    // 해당 컬럼으로 분류되는 첫 expense 를 찾거나 새로 생성
+    // 사전결제액은 보통 원화(KRW), 그 외는 현지 통화
+    const cellCurrency = col === "사전결제액" ? "KRW" : tripObj.local_currency;
     let exp = dayObj.expenses.find((e) => categorize(e) === col);
-    const input = prompt(`[${day}일차 · ${col}] 금액 입력 (${tripObj.local_currency} 기준):`,
-      exp && exp.amount != null ? exp.amount : "");
+    const input = prompt(
+      `[${day}일차 · ${col}] 금액 입력 (${cellCurrency} 기준, 비우면 삭제):`,
+      exp && exp.amount != null ? exp.amount : ""
+    );
     if (input === null) return;
     const amount = input.trim() === "" ? null : Number(input);
     if (input.trim() !== "" && Number.isNaN(amount)) {
@@ -383,11 +392,87 @@
       dayObj.expenses.push({
         item: col,
         amount,
-        currency: tripObj.local_currency,
+        currency: cellCurrency,
         pay_type: col === "사전결제액" ? "PREPAID" : "LOCAL",
       });
     }
+    await persistTrip(tripObj);
     render();
+  }
+
+  // 일차 추가 (수동 일정 확장)
+  async function addDay(tripId) {
+    const trip = TRIPS.find((t) => t.trip_id === tripId);
+    if (!trip) return;
+    const nextDay = (trip.itinerary.reduce((m, d) => Math.max(m, d.day), 0) || 0) + 1;
+    trip.itinerary.push({ day: nextDay, description: "", expenses: [] });
+    trip.total_days = trip.itinerary.length;
+    await persistTrip(trip);
+    render();
+  }
+
+  // ---------------------------------------------------------------------------
+  // 저장: 백엔드가 있으면 영속 저장, 없으면 메모리에만 (폴백)
+  // ---------------------------------------------------------------------------
+  function upsertLocal(trip) {
+    const idx = TRIPS.findIndex((t) => t.trip_id === trip.trip_id);
+    if (idx >= 0) TRIPS[idx] = trip;
+    else TRIPS.unshift(trip);
+  }
+
+  async function persistTrip(trip) {
+    if (backendOnline) {
+      try {
+        const r = await fetch(`${DASHBOARD_BACKEND}/api/trips`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ trip }),
+        });
+        if (r.ok) {
+          const { trip: saved } = await r.json();
+          upsertLocal(saved);
+          return saved;
+        }
+      } catch {
+        /* 네트워크 오류 → 메모리 폴백 */
+      }
+    }
+    // 폴백: trip_id 없으면 임시 부여 후 메모리에만
+    if (!trip.trip_id) trip.trip_id = "local-" + Math.random().toString(36).slice(2, 8);
+    upsertLocal(trip);
+    return trip;
+  }
+
+  // 새 여행 생성 (빈 일정표) → 저장 → 선택
+  async function createTrip(form) {
+    const days = Math.max(1, Number(form.total_days) || 1);
+    const currency = (form.currency || "KRW").trim().toUpperCase();
+    const trip = {
+      title: form.title?.trim() || "새 여행",
+      country: form.country,
+      local_currency: currency,
+      status: form.status,
+      total_days: days,
+      party_size: Number(form.party_size) || 4,
+      current_fx_rate:
+        form.fx !== "" && form.fx != null ? Number(form.fx) : FX_RATES[currency] ?? null,
+      summary: {
+        prepaid_krw_per_person: null,
+        local_estimated_krw_per_person: null,
+        final_total_krw_per_person: null,
+      },
+      itinerary: Array.from({ length: days }, (_, i) => ({
+        day: i + 1,
+        description: "",
+        expenses: [],
+      })),
+    };
+    const saved = await persistTrip(trip);
+    state.country = "전체";
+    state.status = "ALL";
+    state.selectedTripId = saved.trip_id;
+    render();
+    return saved;
   }
 
   // ---------------------------------------------------------------------------
@@ -454,14 +539,14 @@
       if (r.ok) {
         const { trips } = await r.json();
         const list = Array.isArray(trips) ? trips : [];
+        backendOnline = true;
         // 백엔드 저장 여행을 앞에, 중복 아닌 mock 샘플을 뒤에
         const ids = new Set(list.map((t) => t.trip_id));
         TRIPS = [...list, ...MOCK_TRIPS.filter((t) => !ids.has(t.trip_id))];
-        state.selectedTripId = null;
         render();
         const badge = $("#backend-badge");
         if (badge) {
-          badge.textContent = `백엔드 연결됨 · 저장 ${list.length}건`;
+          badge.textContent = `서버 연결됨 · 저장 ${list.length}건`;
           badge.classList.remove("hidden");
         }
         return; // 연결 성공 → 재시도 중단
@@ -473,11 +558,221 @@
     if (attempt < 8) setTimeout(() => loadBackendTrips(attempt + 1), 1500);
   }
 
+  // ---------------------------------------------------------------------------
+  // 모달: 새 여행 만들기 / 견적서 업로드(AI)
+  // ---------------------------------------------------------------------------
+  function openModal(id) {
+    $("#" + id).classList.remove("hidden");
+  }
+  function closeModals() {
+    document.querySelectorAll("[id^='modal-']").forEach((m) => m.classList.add("hidden"));
+  }
+
+  function fillCountrySelect() {
+    const sel = $("#nt-country");
+    sel.innerHTML = COUNTRY_CATALOG.map(
+      (c) => `<option value="${c.name}" data-cur="${c.currency}">${c.name}</option>`
+    ).join("");
+    const syncCurrency = () => {
+      const opt = sel.options[sel.selectedIndex];
+      $("#nt-currency").value = opt?.dataset.cur || "";
+      const fx = FX_RATES[opt?.dataset.cur];
+      $("#nt-fx").value = fx != null ? fx : "";
+    };
+    sel.addEventListener("change", syncCurrency);
+    syncCurrency();
+  }
+
+  function wireNewTrip() {
+    $("#btn-new-trip").addEventListener("click", () => openModal("modal-new-trip"));
+    $("#nt-create").addEventListener("click", async () => {
+      await createTrip({
+        title: $("#nt-title").value,
+        country: $("#nt-country").value,
+        currency: $("#nt-currency").value,
+        total_days: $("#nt-days").value,
+        party_size: $("#nt-party").value,
+        status: $("#nt-status").value,
+        fx: $("#nt-fx").value,
+      });
+      $("#nt-title").value = "";
+      closeModals();
+      toast("새 여행을 만들었어요. 셀을 더블클릭해 금액을 입력하세요!");
+    });
+  }
+
+  // ---- 업로드(AI) 모달 ----
+  let upAttachments = [];
+  let upTrip = null;
+
+  function upFileToAttachment(file) {
+    return new Promise((resolve, reject) => {
+      const isImage = file.type.startsWith("image/");
+      const isPdf = file.type === "application/pdf";
+      const reader = new FileReader();
+      if (isImage || isPdf) {
+        reader.onload = () => {
+          const base64 = String(reader.result).split(",")[1];
+          resolve(
+            isPdf
+              ? { kind: "pdf", data: base64, name: file.name }
+              : { kind: "image", mediaType: file.type, data: base64, name: file.name }
+          );
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload = () => resolve({ kind: "text", text: String(reader.result), name: file.name });
+        reader.onerror = reject;
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function renderUpAttachments() {
+    const wrap = $("#up-attachments");
+    $("#up-analyze").disabled = upAttachments.length === 0;
+    wrap.innerHTML = upAttachments
+      .map((a, i) => {
+        const icon = a.kind === "image" ? "🖼️" : a.kind === "pdf" ? "📄" : "📝";
+        return `<div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-md px-2 py-1.5">
+          <span class="text-[11px] text-slate-600 truncate">${icon} ${a.name || a.kind}</span>
+          <button data-i="${i}" class="up-rm text-slate-400 hover:text-rose-500 text-xs font-bold">✕</button>
+        </div>`;
+      })
+      .join("");
+    wrap.querySelectorAll(".up-rm").forEach((b) =>
+      b.addEventListener("click", () => {
+        upAttachments.splice(Number(b.dataset.i), 1);
+        renderUpAttachments();
+      })
+    );
+  }
+
+  async function upHandleFiles(files) {
+    for (const f of files) {
+      try {
+        upAttachments.push(await upFileToAttachment(f));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    renderUpAttachments();
+  }
+
+  function wireUpload() {
+    $("#btn-upload").addEventListener("click", () => {
+      upAttachments = [];
+      upTrip = null;
+      $("#up-result").classList.add("hidden");
+      $("#up-status").textContent = backendOnline
+        ? ""
+        : "⚠️ AI 분석은 서버(골프총무-실행.bat)가 켜져 있어야 합니다.";
+      renderUpAttachments();
+      openModal("modal-upload");
+    });
+    $("#up-file").addEventListener("change", (e) => upHandleFiles(e.target.files));
+
+    const dz = $("#up-dropzone");
+    ["dragover", "dragenter"].forEach((ev) =>
+      dz.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dz.classList.add("border-emerald-400", "bg-emerald-50");
+      })
+    );
+    ["dragleave", "drop"].forEach((ev) =>
+      dz.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dz.classList.remove("border-emerald-400", "bg-emerald-50");
+      })
+    );
+    dz.addEventListener("drop", (e) => {
+      if (e.dataTransfer?.files?.length) upHandleFiles(e.dataTransfer.files);
+    });
+
+    document.addEventListener("paste", (e) => {
+      if ($("#modal-upload").classList.contains("hidden")) return;
+      for (const item of e.clipboardData?.items || []) {
+        if (item.type.startsWith("image/")) {
+          const f = item.getAsFile();
+          if (f) upFileToAttachment(f).then((a) => {
+            upAttachments.push({ ...a, name: "붙여넣은 이미지" });
+            renderUpAttachments();
+          });
+        }
+      }
+    });
+
+    $("#up-analyze").addEventListener("click", async () => {
+      const text = $("#up-text").value.trim();
+      const inputs = [
+        ...(text ? [{ kind: "text", text }] : []),
+        ...upAttachments.map((a) =>
+          a.kind === "text"
+            ? { kind: "text", text: a.text }
+            : a.kind === "image"
+              ? { kind: "image", mediaType: a.mediaType, data: a.data }
+              : { kind: "pdf", data: a.data }
+        ),
+      ];
+      if (inputs.length === 0) {
+        $("#up-status").textContent = "분석할 자료를 추가하세요.";
+        return;
+      }
+      $("#up-status").textContent = "AI 분석 중… (몇 초~십여 초)";
+      $("#up-analyze").disabled = true;
+      try {
+        const r = await fetch(`${DASHBOARD_BACKEND}/api/parse`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ inputs }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || `서버 오류 ${r.status}`);
+        upTrip = j.trip;
+        $("#up-json").textContent = JSON.stringify(j.trip, null, 2);
+        $("#up-result").classList.remove("hidden");
+        $("#up-status").textContent = "✅ 분석 완료 — 확인 후 추가하세요.";
+      } catch (err) {
+        $("#up-status").textContent = "❌ " + err.message;
+      } finally {
+        $("#up-analyze").disabled = upAttachments.length === 0;
+      }
+    });
+
+    $("#up-add").addEventListener("click", async () => {
+      if (!upTrip) return;
+      const saved = await persistTrip(upTrip);
+      state.country = "전체";
+      state.status = "ALL";
+      state.selectedTripId = saved.trip_id;
+      render();
+      closeModals();
+      toast("견적서에서 여행을 추가했어요!");
+    });
+  }
+
+  function initUI() {
+    fillCountrySelect();
+    wireNewTrip();
+    wireUpload();
+    document.querySelectorAll("[data-close-modal]").forEach((b) =>
+      b.addEventListener("click", closeModals)
+    );
+    // 오버레이 배경 클릭 시 닫기
+    document.querySelectorAll("[id^='modal-']").forEach((m) =>
+      m.addEventListener("click", (e) => {
+        if (e.target === m) closeModals();
+      })
+    );
+  }
+
   // 전역 핸들러 노출 (인라인 ondblclick/onclick 용)
-  window.GolfDirector = { editCell, copyKakao };
+  window.GolfDirector = { editCell, copyKakao, addDay };
 
   document.addEventListener("DOMContentLoaded", () => {
     render();
+    initUI();
     loadBackendTrips();
   });
 })();

@@ -8,6 +8,7 @@
  * API 키는 서버 환경변수(ANTHROPIC_API_KEY)에만 존재 → 클라이언트에 노출되지 않음.
  */
 import "dotenv/config";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import { parseToTrip } from "./anthropic.js";
@@ -16,6 +17,10 @@ import { listTrips, saveTrip } from "./store.js";
 const app = express();
 app.use(cors()); // 익스텐션/대시보드 어디서든 호출 허용 (MVP). 운영 시 origin 제한 권장.
 app.use(express.json({ limit: "25mb" })); // 이미지/PDF base64는 클 수 있음
+
+// 대시보드(frontend)를 같은 서버에서 서빙 → http://localhost:8787 한 주소로 끝.
+const frontendDir = fileURLToPath(new URL("../frontend", import.meta.url));
+app.use(express.static(frontendDir));
 
 app.get("/health", (_req, res) => {
   res.json({
