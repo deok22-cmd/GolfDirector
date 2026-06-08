@@ -448,26 +448,29 @@
   // ---------------------------------------------------------------------------
   // 백엔드 연동: 저장된 여행 로드 (미실행 시 mockData 폴백)
   // ---------------------------------------------------------------------------
-  async function loadBackendTrips() {
+  async function loadBackendTrips(attempt = 0) {
     try {
       const r = await fetch(`${DASHBOARD_BACKEND}/api/trips`, { cache: "no-store" });
-      if (!r.ok) return;
-      const { trips } = await r.json();
-      if (Array.isArray(trips) && trips.length) {
+      if (r.ok) {
+        const { trips } = await r.json();
+        const list = Array.isArray(trips) ? trips : [];
         // 백엔드 저장 여행을 앞에, 중복 아닌 mock 샘플을 뒤에
-        const ids = new Set(trips.map((t) => t.trip_id));
-        TRIPS = [...trips, ...MOCK_TRIPS.filter((t) => !ids.has(t.trip_id))];
+        const ids = new Set(list.map((t) => t.trip_id));
+        TRIPS = [...list, ...MOCK_TRIPS.filter((t) => !ids.has(t.trip_id))];
         state.selectedTripId = null;
         render();
         const badge = $("#backend-badge");
         if (badge) {
-          badge.textContent = `백엔드 연결됨 · 저장 ${trips.length}건`;
+          badge.textContent = `백엔드 연결됨 · 저장 ${list.length}건`;
           badge.classList.remove("hidden");
         }
+        return; // 연결 성공 → 재시도 중단
       }
     } catch {
-      /* 백엔드 미실행 → mockData 로 계속 동작 */
+      /* 아직 서버가 안 켜짐 */
     }
+    // 서버가 켜질 때까지 잠깐씩 자동 재시도(원클릭 실행 시 새로고침 불필요)
+    if (attempt < 8) setTimeout(() => loadBackendTrips(attempt + 1), 1500);
   }
 
   // 전역 핸들러 노출 (인라인 ondblclick/onclick 용)
