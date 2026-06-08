@@ -6,6 +6,9 @@ node_modules/
 .env.local
 *.key
 
+# 백엔드 간이 저장 파일 (런타임 생성 데이터)
+backend/trips.json
+
 # 로컬 머신 전용 Claude 설정 (PC 간 공유 X — 권한 등 머신별 설정)
 .claude/settings.local.json
 

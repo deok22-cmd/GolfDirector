@@ -10,19 +10,35 @@ GolfDirector/
 ├─ overview.md            # 제품 기획 및 개발 사양서
 ├─ extension/             # 크롬 익스텐션 (Manifest V3 · SidePanel)
 │  ├─ manifest.json
-│  ├─ background.js       # 서비스워커: 사이드패널 오픈 + 컨텍스트 메뉴 수집
-│  ├─ sidepanel.html      # 사이드패널 UI (텍스트 분석 → JSON 미리보기)
-│  └─ sidepanel.js        # 목업 AI 파서 (Phase 2에서 실제 API 연동)
+│  ├─ background.js       # 서비스워커: 사이드패널 오픈 + 텍스트/이미지 컨텍스트 메뉴 수집
+│  ├─ sidepanel.html      # 멀티모달 수집 UI + 백엔드 URL 설정
+│  └─ sidepanel.js        # 파일·이미지·PDF·텍스트 → 백엔드 정제 → 대시보드 저장
+├─ backend/               # 백엔드 프록시 (Node · Express)
+│  ├─ server.js           # /api/parse, /api/trips, /health
+│  ├─ anthropic.js        # Claude Opus 4.8 멀티모달 → 표준 JSON
+│  ├─ schema.js           # JSON Schema + 시스템 프롬프트
+│  ├─ store.js            # trips.json 간이 저장
+│  └─ .env.example        # ANTHROPIC_API_KEY
 └─ frontend/              # 웹 대시보드 (SPA · Tailwind CSS)
-   ├─ index.html          # 국가별 탭 + 상태 필터 + 비용 매트릭스 레이아웃
-   ├─ mockData.js         # 사양서 JSON 스키마 기반 더미 데이터
-   └─ app.js              # 필터/매트릭스/요약/카톡복사 렌더링 로직
+   ├─ index.html          # 국가별 탭 + 상태 필터 + 비용 매트릭스 + 백엔드 연결 배지
+   ├─ mockData.js         # 사양서 JSON 스키마 기반 더미 데이터(백엔드 미실행 시 폴백)
+   └─ app.js              # 필터/매트릭스/요약/카톡복사 + 백엔드 로드
 ```
 
 ## 실행 방법
 
+### 백엔드 (AI 정제 서버)
+```bash
+cd backend
+npm install
+cp .env.example .env        # PowerShell: Copy-Item .env.example .env
+# .env 에 ANTHROPIC_API_KEY 입력
+npm start                   # http://localhost:8787
+```
+
 ### 웹 대시보드
 `frontend/index.html` 을 브라우저로 직접 열면 됩니다. (Tailwind는 Play CDN 사용)
+백엔드가 실행 중이면 저장된 여행을 자동 로드하고, 아니면 mockData로 동작합니다.
 
 ### 크롬 익스텐션
 1. 크롬 주소창에 `chrome://extensions` 입력

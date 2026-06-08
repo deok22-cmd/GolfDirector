@@ -4,58 +4,86 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>골프총무 사이드패널</title>
-  <!-- Tailwind Play CDN (Phase 1 프로토타이핑용) -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 text-sm">
   <div class="flex flex-col h-screen">
 
     <!-- 헤더 -->
-    <header class="px-4 py-3 bg-emerald-600 text-white flex items-center gap-2">
-      <span class="text-lg">⛳</span>
-      <div>
-        <div class="font-extrabold leading-tight">골프총무</div>
-        <div class="text-[11px] text-emerald-100">상품 페이지 → 비용 매트릭스 파서</div>
+    <header class="px-4 py-3 bg-emerald-600 text-white flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">⛳</span>
+        <div>
+          <div class="font-extrabold leading-tight">골프총무</div>
+          <div class="text-[11px] text-emerald-100">텍스트·이미지·PDF → 비용 매트릭스</div>
+        </div>
       </div>
+      <button id="btn-settings" class="text-emerald-100 hover:text-white text-lg" title="설정">⚙️</button>
     </header>
+
+    <!-- 설정(백엔드 URL) -->
+    <div id="settings-panel" class="hidden px-4 py-3 bg-slate-100 border-b border-slate-200">
+      <label class="block text-[11px] font-bold text-slate-500 mb-1">백엔드 서버 주소</label>
+      <div class="flex gap-2">
+        <input id="backend-url" type="text" placeholder="http://localhost:8787"
+          class="flex-1 text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+        <button id="btn-test" class="px-3 text-xs font-semibold bg-slate-700 text-white rounded-md hover:bg-slate-800">연결</button>
+      </div>
+      <div id="health-status" class="text-[11px] text-slate-400 mt-1.5">상태 미확인</div>
+    </div>
 
     <!-- 본문 -->
     <main class="flex-1 overflow-y-auto p-4 space-y-4">
 
+      <!-- 자료 첨부 -->
       <div class="rounded-lg bg-white border border-slate-200 p-3">
-        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">분석할 텍스트</label>
-        <textarea id="capture-text" rows="8"
-          placeholder="여행사 상품 페이지에서 텍스트를 드래그한 뒤 우클릭 → '골프총무로 보내기' 하거나, 여기에 직접 붙여넣으세요."
+        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">분석할 자료</label>
+
+        <!-- 드롭존 -->
+        <div id="dropzone"
+          class="border-2 border-dashed border-slate-300 rounded-md p-3 text-center text-[11px] text-slate-400 mb-2 transition">
+          파일을 끌어다 놓거나 <label class="text-emerald-600 font-semibold cursor-pointer underline">찾아보기
+            <input id="file-input" type="file" class="hidden" multiple accept="image/*,application/pdf,.txt,text/plain" />
+          </label><br />
+          (이미지·PDF·txt) · 스크린샷은 <b>Ctrl+V</b>로 붙여넣기
+        </div>
+
+        <textarea id="capture-text" rows="4"
+          placeholder="여기에 텍스트를 직접 붙여넣거나, 웹페이지에서 드래그 후 우클릭 → '골프총무로 보내기'"
           class="w-full text-xs border border-slate-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-emerald-200 resize-none"></textarea>
-        <div class="flex gap-2 mt-2">
+        <button id="btn-add-text" class="mt-1 text-[11px] text-emerald-700 font-semibold hover:underline">+ 위 텍스트를 첨부에 추가</button>
+
+        <!-- 첨부 목록 -->
+        <div id="attachments" class="mt-2 space-y-1.5"></div>
+
+        <div class="flex gap-2 mt-3">
           <button id="btn-analyze"
-            class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-md transition">
-            🔍 페이지 분석 (AI 정제)
+            class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-xs font-bold py-2 rounded-md transition">
+            🔍 AI 분석 (Claude Opus 4.8)
           </button>
           <button id="btn-clear"
             class="px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-md transition">
-            지우기
+            비우기
           </button>
         </div>
       </div>
 
-      <!-- 정제 결과(JSON) 미리보기 -->
+      <!-- 정제 결과 -->
       <div class="rounded-lg bg-white border border-slate-200 p-3">
         <div class="flex items-center justify-between mb-1.5">
           <label class="text-[11px] font-bold text-slate-400">정제 결과 (표준 JSON)</label>
           <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">대기</span>
         </div>
         <pre id="json-output"
-          class="text-[11px] bg-slate-900 text-emerald-200 rounded-md p-3 overflow-x-auto whitespace-pre-wrap min-h-[120px]">// 분석 결과가 여기에 표시됩니다.</pre>
-        <button id="btn-send" disabled
+          class="text-[11px] bg-slate-900 text-emerald-200 rounded-md p-3 overflow-x-auto whitespace-pre-wrap min-h-[120px] max-h-[280px] overflow-y-auto">// 분석 결과가 여기에 표시됩니다.</pre>
+        <button id="btn-save" disabled
           class="w-full mt-2 bg-slate-800 disabled:bg-slate-300 text-white text-xs font-bold py-2 rounded-md transition">
-          📤 대시보드로 저장 (Phase 2 연동 예정)
+          💾 대시보드에 저장
         </button>
       </div>
 
       <p class="text-[10px] text-slate-400 leading-relaxed">
-        ※ Phase 1 단계에서는 AI API 연동 전 <b>목업 파싱</b>으로 동작합니다.
-        실제 Gemini/Claude API 정제는 Phase 2에서 연결됩니다.
+        ※ 자료는 백엔드 서버를 거쳐 AI로 정제됩니다. API 키는 서버에만 보관되어 안전합니다.
       </p>
     </main>
   </div>

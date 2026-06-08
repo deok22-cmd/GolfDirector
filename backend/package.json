@@ -1,0 +1,17 @@
+{
+  "name": "golf-director-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "골프총무 백엔드 프록시 — Claude Opus 4.8로 여행 자료(텍스트/이미지/PDF)를 표준 JSON으로 정제 + 여행 저장/조회",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

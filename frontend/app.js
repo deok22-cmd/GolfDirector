@@ -8,6 +8,11 @@
   const { FX_RATES, CURRENCY_SYMBOL, COST_COLUMNS, COUNTRY_CATALOG, MOCK_TRIPS } =
     window.GolfDirectorData;
 
+  // 백엔드에서 저장된 여행을 불러오고, 미실행이면 mockData로 폴백.
+  const DASHBOARD_BACKEND =
+    localStorage.getItem("gdBackend") || "http://localhost:8787";
+  let TRIPS = MOCK_TRIPS.slice();
+
   // ---------------------------------------------------------------------------
   // 애플리케이션 상태
   // ---------------------------------------------------------------------------
@@ -58,7 +63,7 @@
   // 데이터 가공
   // ---------------------------------------------------------------------------
   function filteredTrips() {
-    return MOCK_TRIPS.filter((t) => {
+    return TRIPS.filter((t) => {
       const countryOk = state.country === "전체" || t.country === state.country;
       const statusOk = state.status === "ALL" || t.status === state.status;
       return countryOk && statusOk;
@@ -68,7 +73,7 @@
   // 카탈로그(항상 노출) ∪ 데이터에만 있는 국가(뒤에 합산)
   function tabCountries() {
     const catalog = COUNTRY_CATALOG.map((c) => c.name);
-    const dataOnly = [...new Set(MOCK_TRIPS.map((t) => t.country))].filter(
+    const dataOnly = [...new Set(TRIPS.map((t) => t.country))].filter(
       (c) => !catalog.includes(c)
     );
     return [...catalog, ...dataOnly];
@@ -76,7 +81,7 @@
 
   // 현재 상태필터 기준, 국가별 여행 건수
   function countByCountry() {
-    const base = MOCK_TRIPS.filter(
+    const base = TRIPS.filter(
       (t) => state.status === "ALL" || t.status === state.status
     );
     const counts = {};
@@ -360,7 +365,7 @@
   // ---------------------------------------------------------------------------
   function editCell(td) {
     const { trip, day, col } = td.dataset;
-    const tripObj = MOCK_TRIPS.find((t) => t.trip_id === trip);
+    const tripObj = TRIPS.find((t) => t.trip_id === trip);
     const dayObj = tripObj.itinerary.find((d) => d.day === Number(day));
     // 해당 컬럼으로 분류되는 첫 expense 를 찾거나 새로 생성
     let exp = dayObj.expenses.find((e) => categorize(e) === col);
@@ -389,7 +394,7 @@
   // 인터랙션: 카카오톡 브리핑 텍스트 생성 → 클립보드 (기능3 스텁)
   // ---------------------------------------------------------------------------
   function copyKakao(tripId) {
-    const trip = MOCK_TRIPS.find((t) => t.trip_id === tripId);
+    const trip = TRIPS.find((t) => t.trip_id === tripId);
     const lines = [];
     lines.push(`⛳ [${trip.title}] 여행 정산 안내`);
     lines.push(`■ 예상 1인 총비용: 약 ${krw(trip.summary.final_total_krw_per_person)} (현지 환율 적용)`);
@@ -440,8 +445,36 @@
     $("#result-count").textContent = `${trips.length}건`;
   }
 
+  // ---------------------------------------------------------------------------
+  // 백엔드 연동: 저장된 여행 로드 (미실행 시 mockData 폴백)
+  // ---------------------------------------------------------------------------
+  async function loadBackendTrips() {
+    try {
+      const r = await fetch(`${DASHBOARD_BACKEND}/api/trips`, { cache: "no-store" });
+      if (!r.ok) return;
+      const { trips } = await r.json();
+      if (Array.isArray(trips) && trips.length) {
+        // 백엔드 저장 여행을 앞에, 중복 아닌 mock 샘플을 뒤에
+        const ids = new Set(trips.map((t) => t.trip_id));
+        TRIPS = [...trips, ...MOCK_TRIPS.filter((t) => !ids.has(t.trip_id))];
+        state.selectedTripId = null;
+        render();
+        const badge = $("#backend-badge");
+        if (badge) {
+          badge.textContent = `백엔드 연결됨 · 저장 ${trips.length}건`;
+          badge.classList.remove("hidden");
+        }
+      }
+    } catch {
+      /* 백엔드 미실행 → mockData 로 계속 동작 */
+    }
+  }
+
   // 전역 핸들러 노출 (인라인 ondblclick/onclick 용)
   window.GolfDirector = { editCell, copyKakao };
 
-  document.addEventListener("DOMContentLoaded", render);
+  document.addEventListener("DOMContentLoaded", () => {
+    render();
+    loadBackendTrips();
+  });
 })();
