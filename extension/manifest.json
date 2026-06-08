@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "골프총무 (Golf Director)",
+  "version": "0.1.0",
+  "description": "해외 골프 여행 상품 페이지를 긁어와 일정별 비용 매트릭스로 정제해주는 AI 비서. 우측 사이드패널에서 동작합니다.",
+  "permissions": ["sidePanel", "activeTab", "scripting", "storage", "contextMenus"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "골프총무 사이드패널 열기"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}

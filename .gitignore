@@ -1,0 +1,17 @@
+# 의존성
+node_modules/
+
+# 로컬 환경/비밀키 (Phase 2 AI API 키 등)
+.env
+.env.local
+*.key
+
+# 로컬 머신 전용 Claude 설정 (PC 간 공유 X — 권한 등 머신별 설정)
+.claude/settings.local.json
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

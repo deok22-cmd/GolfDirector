@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>골프총무 (Golf Director) · 대시보드</title>
+
+  <!-- Tailwind CSS (Play CDN — Phase 1 프로토타이핑용) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+  />
+  <style>
+    /* 가로 스크롤바 미세 스타일 */
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen">
+
+  <!-- ============================= 상단 헤더 ============================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-5 py-4">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-xl shadow-sm">⛳</div>
+          <div>
+            <h1 class="text-lg font-extrabold leading-tight">골프총무 <span class="text-slate-400 font-medium text-sm">Golf Director</span></h1>
+            <p class="text-[11px] text-slate-400">해외 골프 여행 일정 기반 비용 관리 & 시뮬레이터</p>
+          </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+          <span class="px-2.5 py-1 rounded-full bg-slate-100">검색 결과 <b id="result-count" class="text-slate-700">0건</b></span>
+        </div>
+      </div>
+
+      <!-- 국가별 탭 -->
+      <nav class="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1" id="country-tabs"></nav>
+
+      <!-- 과거/미래 상태 필터 -->
+      <div class="mt-3 flex items-center gap-2">
+        <span class="text-[11px] font-semibold text-slate-400 mr-1">상태</span>
+        <div class="flex items-center gap-1.5" id="status-filter"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= 본문 ============================= -->
+  <main class="max-w-7xl mx-auto px-5 py-6 space-y-6">
+
+    <!-- 여행 선택 카드 리스트 -->
+    <section>
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">여행 선택</h2>
+      <div class="flex items-stretch gap-3 overflow-x-auto pb-2" id="trip-list"></div>
+    </section>
+
+    <!-- 일정별 비용 매트릭스 (핵심 UI) -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5" id="matrix-panel"></section>
+
+  </main>
+
+  <!-- 토스트 -->
+  <div id="toast"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg
+    opacity-0 translate-y-2 transition-all duration-300 pointer-events-none"></div>
+
+  <!-- 스크립트 -->
+  <script src="mockData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
