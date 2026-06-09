@@ -13,49 +13,52 @@
 - **개발환경**: Google Antigravity IDE / 크롬 익스텐션(MV3) + 웹 대시보드(SPA·Tailwind)
 - **원본 사양서**: `overview.md` (절대 삭제 금지 — 모든 기능의 기준 문서)
 
-## 2. 핵심 사용자 흐름 (2.6 피벗 후 — 계산기 우선)
-- **메인 = 간단 계산기(`index.html`)**: 인원 + 항목별 금액·통화 입력 → **실시간 환율로 1인당/일행합계 즉시** → 카톡 공지 복사 → (선택) localStorage 기록 저장. **설치·서버·키 불필요**(파일 더블클릭).
-- **고급(`dashboard.html`, 백엔드 필요)**: ① 견적서(사진/PDF/텍스트) AI 분석 또는 "새 여행 직접 만들기" → ② 일정별 비용 매트릭스(누락 ⚠️) → ③ 환율 시뮬레이션/카톡 → ④ 과거 여행(COMPLETED) 아카이브.
-- 원본 사양서(overview.md)의 5단계(수집→정리→시뮬→공유→복기)는 고급 흐름에 해당. 일반 총무 진입점은 계산기.
+## 2. 핵심 사용자 흐름 (v2 — 회원제, 자세히는 기획안.md)
+1. **회원가입/로그인** (이메일+비밀번호).
+2. **내 여행 목록**: 생성/조회/수정/삭제. 카드에 제목·국가·1인당 예상액.
+3. **여행 편집(계산기)**: 국가 선택→그 나라 통화+원화 기본 / 항목·금액 빠른입력(Enter로 다음 행) / **실시간 환율 자동+수동** / 항목별 **1인·팀(N빵)** / 1인당·합계 실시간.
+4. **카톡 전달**: "1인당 ○○원 + 항목 + 환율 + 각자 보내세요" 정산 문구 복사.
+- **모바일 우선**. 데이터는 계정에 서버 저장 → 어디서나 조회.
+- **수익화**: 무료 + AdSense 자리(배포·승인 후), 고급(AI 견적분석 등)은 후일 유료.
 
-## 3. 디렉토리 구조
+## 3. 디렉토리 구조 (v2 — 회원제 웹서비스)
 ```
 GolfDirector/
-├─ overview.md            # 제품 사양서 (기준 문서)
+├─ overview.md            # 원본 사양서 (기준 문서)
+├─ 기획안.md              # ★v2 서비스 기획안 (재탄생 — 회원제·N빵·수익화) ← 먼저 읽기
 ├─ CLAUDE.md              # ← 이 파일 (휴대용 컨텍스트)
-├─ README.md             # 사용자용 실행/구조 안내
-├─ extension/             # 크롬 익스텐션 (MV3 · SidePanel) — v0.2.0
-│  ├─ manifest.json       # 권한 + host_permissions(http/https, 이미지/백엔드 호출용)
-│  ├─ background.js       # 서비스워커: 패널 오픈 + 우클릭 텍스트/이미지 수집 → storage(pendingCaptures)
-│  ├─ sidepanel.html      # 멀티모달 수집 UI + 백엔드 URL 설정
-│  └─ sidepanel.js        # 파일/이미지/PDF/텍스트 첨부 → 백엔드 /api/parse → /api/trips 저장
-├─ backend/               # 백엔드 프록시 (Node·Express·ESM) — Phase 2 신규
-│  ├─ server.js           # /api/parse, /api/trips(GET·POST), /health
-│  ├─ anthropic.js        # 공식 SDK로 Claude Opus 4.8 호출 (멀티모달 → 구조화 JSON)
-│  ├─ schema.js           # TRIP_JSON_SCHEMA(structured outputs) + SYSTEM_PROMPT
-│  ├─ store.js            # trips.json 파일 기반 간이 저장
-│  └─ .env.example        # ANTHROPIC_API_KEY, PORT
-└─ frontend/
-   ├─ index.html          # ★메인 = 간단 계산기 (설치 0, 백엔드 불필요)
-   ├─ calculator.js       # 계산기 로직: 1인/팀 N빵 환산, 실시간 환율, 카톡, localStorage 기록
-   ├─ dashboard.html      # 고급(매트릭스) 보기 — 국가탭·상태필터·AI견적분석 (app.js 사용)
-   ├─ app.js              # 대시보드 렌더링/인터랙션 + 백엔드 /api/trips 연동
-   └─ mockData.js         # FX_RATES(폴백)·CURRENCY_SYMBOL·COUNTRY_CATALOG·MOCK_TRIPS
+├─ 골프총무-실행.bat       # 원클릭 실행(설치→키→서버→브라우저)
+├─ backend/               # Node·Express·ESM — 인증 + 사용자별 여행 CRUD + (향후)AI
+│  ├─ server.js           # /api/auth/*, /api/trips(GET·POST·PUT·DELETE), /api/parse, /health, 정적서빙
+│  ├─ auth.js             # 회원가입/로그인(bcryptjs 해시 + JWT) + authMiddleware
+│  ├─ db.js               # JSON 파일 DB (backend/data/{users,trips}.json, git 제외)
+│  ├─ anthropic.js        # (향후/유료) Claude Opus 4.8 멀티모달 → 구조화 JSON
+│  ├─ schema.js           # AI 파서용 TRIP_JSON_SCHEMA + SYSTEM_PROMPT
+│  └─ .env.example        # JWT_SECRET, PORT, ANTHROPIC_API_KEY(선택)
+├─ frontend/
+│  ├─ index.html          # ★메인 앱 (모바일 우선): 로그인 / 내 여행 목록 / 여행 편집(계산기)
+│  ├─ main.js             # 인증·CRUD·여행별 계산기(국가→통화, 실시간/수동 환율, N빵, 카톡)
+│  ├─ mockData.js         # FX_RATES(폴백)·CURRENCY_SYMBOL·COUNTRY_CATALOG (앱이 재사용)
+│  ├─ dashboard.html      # [레거시] 매트릭스 보기 (app.js) — v2 인증과 미연동, 참고용
+│  └─ app.js              # [레거시] 매트릭스/AI업로드 로직
+└─ extension/             # [레거시/선택] 크롬 익스텐션 (멀티모달 수집) — v2 메인 아님
 ```
+> 레거시(dashboard.html·app.js·extension)는 이전 단계 산출물. v2는 `index.html`+`main.js`+백엔드(auth)가 본체.
 
-## 4. 실행 방법
-- **가장 쉬움(권장)**: `frontend/index.html` 더블클릭 → **계산기 바로 사용** (설치·서버·키 전부 불필요). 실시간 환율은 인터넷만 있으면 자동.
-- **고급/AI 기능**: `골프총무-실행.bat` 더블클릭(또는 `cd backend && npm install && npm start`). `dashboard.html`의 매트릭스·AI 견적분석·서버저장은 백엔드 필요(+ `.env`에 ANTHROPIC_API_KEY).
-- **익스텐션**(선택): `chrome://extensions` → 개발자 모드 → `extension/` 로드. (AI 수집은 대시보드에도 흡수돼 있어 필수 아님)
+## 4. 실행 방법 (v2는 백엔드 필요 — 회원/저장 때문)
+- **권장**: `골프총무-실행.bat` 더블클릭 → 처음 1회 `npm install` + `.env`(JWT_SECRET) 자동 → `http://localhost:8787`. 또는 수동: `cd backend && npm install && (.env에 JWT_SECRET) && npm start`.
+- 브라우저에서 `http://localhost:8787` 접속 → 회원가입 → 여행 만들기. (`frontend/index.html` 파일을 직접 열면 백엔드는 localhost:8787로 호출)
+- **AI 견적분석**(선택/유료예정): `.env`에 `ANTHROPIC_API_KEY` 추가 시 `/api/parse` 동작.
+- **배포(Phase 3)**: 백엔드를 클라우드(Render/Railway 등)에 올리면 총무는 URL 접속만. 그 후 AdSense 신청.
 
-## 5. 데이터 스키마 & 핵심 규칙 (mockData.js)
-- **Trip 엔티티**: `trip_id, title, country(한글국가명), local_currency, status, total_days, party_size, current_fx_rate, created_at, summary{...}, itinerary[]`
-- **status**: `"PLANNING"`(시뮬레이션 중) | `"COMPLETED"`(다녀온 여행)
-- **expense**: `{ item, amount(number|null), currency, pay_type }` / pay_type = `"PREPAID"` | `"LOCAL"`
-- **amount: null** = 견적서에 금액 누락 → 대시보드에서 ⚠️ 경고 (의도된 설계, 버그 아님)
-- **FX_RATES**: 통화 1단위당 원화 (KRW1, USD1385, THB37.5, JPY9.1, VND0.056, PHP24.5, TWD43, MYR300, CNY190, IDR0.085). **이건 폴백 기본값**. 계산기(`calculator.js`)는 이미 실시간 환율(open.er-api.com) 적용, 실패 시에만 이 값 사용. 매트릭스(`app.js`)는 아직 이 폴백값 사용(향후 실시간 연동 가능).
-- **COST_COLUMNS** (매트릭스 X축 8종): 사전결제액·그린피·카트비·캐디피·캐디팁·미팅샌딩비·식비·기타
-- **categorize()** (app.js): expense.item 문자열을 위 8개 컬럼으로 분류. pay_type=PREPAID 면 무조건 '사전결제액'
+## 5. 데이터 모델 (v2 — 서버 저장)
+- **user**: `{ id, email, passwordHash(bcrypt), createdAt }` — 비밀번호 평문 저장 안 함.
+- **trip**: `{ id, userId, title, country(한글), currency(주통화코드), partySize, fxMode("auto"|"manual"), manualFx{cur:rate}, rows[], createdAt, updatedAt }`
+- **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"|"team") }`
+- **계산식**: `1인당 = Σ(person항목 원화) + Σ(team항목 원화)/인원`, `합계 = 1인당 × 인원`. 원화환산은 `rateOf = manualFx[cur] ?? liveFx[cur] ?? FX_RATES[cur]`.
+- **환율**: 프론트가 `open.er-api.com/v6/latest/USD`(키 불필요)에서 실시간 → `1c=(KRW/USD)/(c/USD)`. 사용자가 칸을 고치면 `manualFx`에 저장되고 trip에 영속. ※ mockData의 FX_RATES는 오프라인 폴백.
+- **국가→통화**: `COUNTRY_CATALOG`(name→currency)로 국가 선택 시 주통화 자동. 행 통화는 KRW·주통화 우선 노출.
+- (레거시) overview 사양서의 matrix 스키마(itinerary/expense/pay_type/COST_COLUMNS)는 dashboard.html·app.js에서만 사용.
 
 ## 6. 결정사항 로그 (Decisions)
 - **국가/통화 분리**: 사양서 샘플은 `"country":"THB"`(통화코드)였으나, 탭이 국가명 기준이라 **`country`(한글 국가명) + `local_currency`(통화코드)로 분리**함. (사양서와 의도적 차이)
@@ -76,10 +79,14 @@ GolfDirector/
   - **계산기 핵심**: 항목별 금액·통화 입력 → 실시간 환율 자동 환산 → 1인당/일행합계 즉시. **항목마다 1인/팀(N빵) 토글**(팀 비용은 인원수로 자동 분배) = 계산기 대비 진짜 차별점.
   - **실시간 환율**: `open.er-api.com/v6/latest/USD`(키 불필요, CORS OK). `1c = (KRW/USD)/(c/USD)`. 실패 시 mockData의 FX_RATES 폴백, 사용자 직접 수정 가능(manualFx). ※ 기본값(THB 37.5)은 실제(≈47)와 차이 커서 실시간이 중요.
   - **저장**: 계산기는 localStorage(서버·키 불필요). 카톡 공지 자동 생성.
-- ⬜ **Phase 3 (예정)**: ① **클라우드 배포**(서버 URL만 주면 끝) ② N빵 정산 고도화(개인별 지출 입력/차액) ③ 파일저장→DB ④ (선택) 크롬 웹스토어 등록
+- ✅ **v2 (완료) — 회원제 웹서비스로 재탄생 (큰 피벗, 기획안.md)**:
+  - **요구**: 회원가입 + 개인별 서버 저장, 여행 CRUD, 국가→통화 자동, 실시간+수동 환율, 항목 빠른입력, N빵 전달, 모바일, 무료+AdSense(후일 유료).
+  - **구현**: 백엔드 인증(bcryptjs+JWT) + 사용자별 trip CRUD(JSON DB). 프론트 재작성(`index.html`+`main.js`): 로그인/목록/여행편집 3뷰, 모바일 우선, Enter로 다음 행, 1인/팀 N빵, 실시간/수동 환율, 카톡 정산. AdSense 자리(`#ad-slot`) 마련.
+  - **검증**: 인증+CRUD curl 테스트 통과. (계산기 단독 calculator.js는 main.js로 흡수돼 삭제)
+- ⬜ **Phase 3 (다음)**: ① **클라우드 배포**(URL만 주면 끝) → 그 후 AdSense 신청 ② JSON DB→실DB(SQLite/Postgres) ③ 비번재설정/구글로그인 ④ 유료: 견적서 AI 자동입력(/api/parse 재사용)·엑셀 내보내기·개인별 지출 정산
 
 ## 8. 다음에 할 일 (Next)
-- 로컬 검증: `frontend/index.html` 더블클릭 → 계산기로 금액 입력·실시간환율·카톡복사·기록저장 확인 (설치 0)
+- 로컬 검증: `골프총무-실행.bat` → `http://localhost:8787` → 회원가입 → 여행 만들기/항목입력/환율/카톡 확인 (모바일 화면도)
 - 계산기가 "계산기보다 쉽다"가 확인되면 → 클라우드 배포(설치 없는 웹앱 완성)로
 
 ## 10. 입력 소스 — 멀티모달 설계 방침 (중요)

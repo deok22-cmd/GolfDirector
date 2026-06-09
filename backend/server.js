@@ -1,75 +1,84 @@
 /**
- * 골프총무 백엔드 프록시 (Express)
- * - POST /api/parse  : 텍스트/이미지/PDF → Claude Opus 4.8 → 표준 trip JSON
- * - GET  /api/trips  : 저장된 여행 목록 (대시보드가 로드)
- * - POST /api/trips  : 여행 저장
- * - GET  /health     : 상태 확인
- *
- * API 키는 서버 환경변수(ANTHROPIC_API_KEY)에만 존재 → 클라이언트에 노출되지 않음.
+ * 골프총무 백엔드 (Express) v2
+ * - 인증: POST /api/auth/register | /api/auth/login,  GET /api/auth/me
+ * - 여행(사용자 범위): GET/POST /api/trips,  PUT/DELETE /api/trips/:id
+ * - (향후/유료) AI 견적 정제: POST /api/parse  (로그인 필요)
+ * - 프론트(frontend/) 정적 서빙 → http://localhost:8787 한 주소
  */
 import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
+import { register, login, authMiddleware, publicUser } from "./auth.js";
+import { db } from "./db.js";
 import { parseToTrip } from "./anthropic.js";
-import { listTrips, saveTrip } from "./store.js";
 
 const app = express();
-app.use(cors()); // 익스텐션/대시보드 어디서든 호출 허용 (MVP). 운영 시 origin 제한 권장.
-app.use(express.json({ limit: "25mb" })); // 이미지/PDF base64는 클 수 있음
+app.use(cors());
+app.use(express.json({ limit: "25mb" }));
 
-// 대시보드(frontend)를 같은 서버에서 서빙 → http://localhost:8787 한 주소로 끝.
+// 프론트 정적 서빙
 const frontendDir = fileURLToPath(new URL("../frontend", import.meta.url));
 app.use(express.static(frontendDir));
 
-app.get("/health", (_req, res) => {
-  res.json({
-    ok: true,
-    service: "golf-director-backend",
-    model: "claude-opus-4-8",
-    hasApiKey: Boolean(process.env.ANTHROPIC_API_KEY),
-  });
-});
+app.get("/health", (_req, res) =>
+  res.json({ ok: true, service: "golf-director", aiEnabled: Boolean(process.env.ANTHROPIC_API_KEY) })
+);
 
-// 자료 → 표준 JSON 정제 (저장은 안 함)
-app.post("/api/parse", async (req, res) => {
+// ---- 인증 ----
+app.post("/api/auth/register", (req, res) => {
   try {
-    const { inputs } = req.body || {};
-    if (!Array.isArray(inputs) || inputs.length === 0) {
-      return res.status(400).json({ error: "inputs[] (text/image/pdf)가 필요합니다." });
-    }
-    const trip = await parseToTrip(inputs);
-    res.json({ trip });
-  } catch (err) {
-    console.error("[/api/parse]", err);
-    res.status(500).json({ error: err?.message || "정제에 실패했습니다." });
+    res.json(register(req.body || {}));
+  } catch (e) {
+    res.status(e.status || 500).json({ error: e.message });
   }
 });
-
-// 저장된 여행 목록
-app.get("/api/trips", (_req, res) => {
-  res.json({ trips: listTrips() });
+app.post("/api/auth/login", (req, res) => {
+  try {
+    res.json(login(req.body || {}));
+  } catch (e) {
+    res.status(e.status || 500).json({ error: e.message });
+  }
+});
+app.get("/api/auth/me", authMiddleware, (req, res) => {
+  const u = db.findUserById(req.userId);
+  if (!u) return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+  res.json({ user: publicUser(u) });
 });
 
-// 여행 저장
-app.post("/api/trips", (req, res) => {
+// ---- 여행 CRUD (사용자 범위) ----
+app.get("/api/trips", authMiddleware, (req, res) => {
+  res.json({ trips: db.listTrips(req.userId) });
+});
+app.post("/api/trips", authMiddleware, (req, res) => {
+  res.json({ trip: db.createTrip(req.userId, req.body?.trip || req.body || {}) });
+});
+app.put("/api/trips/:id", authMiddleware, (req, res) => {
+  const trip = db.updateTrip(req.userId, req.params.id, req.body?.trip || req.body || {});
+  if (!trip) return res.status(404).json({ error: "여행을 찾을 수 없습니다." });
+  res.json({ trip });
+});
+app.delete("/api/trips/:id", authMiddleware, (req, res) => {
+  const ok = db.deleteTrip(req.userId, req.params.id);
+  if (!ok) return res.status(404).json({ error: "여행을 찾을 수 없습니다." });
+  res.json({ ok: true });
+});
+
+// ---- (향후/유료) AI 견적 정제 — 로그인 필요 ----
+app.post("/api/parse", authMiddleware, async (req, res) => {
   try {
-    const { trip } = req.body || {};
-    if (!trip || typeof trip !== "object") {
-      return res.status(400).json({ error: "trip 객체가 필요합니다." });
-    }
-    const saved = saveTrip(trip);
-    res.json({ trip: saved });
-  } catch (err) {
-    console.error("[/api/trips]", err);
-    res.status(500).json({ error: err?.message || "저장에 실패했습니다." });
+    const { inputs } = req.body || {};
+    if (!Array.isArray(inputs) || inputs.length === 0)
+      return res.status(400).json({ error: "inputs[]가 필요합니다." });
+    res.json({ trip: await parseToTrip(inputs) });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "정제 실패" });
   }
 });
 
 const PORT = process.env.PORT || 8787;
 app.listen(PORT, () => {
-  console.log(`⛳ 골프총무 backend → http://localhost:${PORT}`);
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn("⚠️  ANTHROPIC_API_KEY 가 설정되지 않았습니다. .env 를 확인하세요.");
-  }
+  console.log(`⛳ 골프총무 → http://localhost:${PORT}`);
+  if (!process.env.JWT_SECRET)
+    console.warn("⚠️  JWT_SECRET 미설정 — 개발용 기본키 사용 중. 배포 전 .env에 설정하세요.");
 });

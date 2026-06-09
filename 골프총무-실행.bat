@@ -27,26 +27,25 @@ if not exist node_modules (
   echo.
 )
 
-REM --- 3) API 키 최초 1회 입력 ---
+REM --- 3) 최초 1회 환경설정(.env) 자동 생성 ---
 if not exist .env (
-  echo [2/3] Anthropic API 키를 한 번만 입력하면 됩니다.
-  echo       (https://console.anthropic.com 에서 발급, sk-ant- 로 시작)
-  echo.
-  set /p "APIKEY=여기에 키를 붙여넣고 Enter: "
+  echo [2/3] 최초 설정을 만듭니다...
   (
-    echo ANTHROPIC_API_KEY=!APIKEY!
+    echo JWT_SECRET=gd-!RANDOM!!RANDOM!!RANDOM!!RANDOM!
     echo PORT=8787
+    echo ANTHROPIC_API_KEY=
   ) > .env
-  echo  ✔ 저장했어요. 다음부터는 안 물어봅니다.
+  echo  ✔ 완료. (견적서 AI 기능은 나중에 .env의 ANTHROPIC_API_KEY를 채우면 켜져요)
   echo.
 )
 
-REM --- 4) 대시보드 열고 서버 시작 ---
-echo [3/3] 대시보드를 열고 서버를 시작합니다...
+REM --- 4) 브라우저 열고 서버 시작 ---
+echo [3/3] 골프총무를 시작합니다...
 start "" "%~dp0frontend\index.html"
 echo.
-echo  ✔ 준비 완료! 이 검은 창은 그냥 두세요 (닫으면 AI가 멈춥니다).
-echo    대시보드는 잠시 뒤 자동으로 "백엔드 연결됨" 표시가 뜹니다.
+echo  ✔ 준비 완료! 이 검은 창은 그냥 두세요 (닫으면 서버가 멈춰요).
+echo    브라우저에서 회원가입 후 여행을 만들면 됩니다.
+echo    (주소창에 http://localhost:8787 을 쳐도 됩니다)
 echo.
 call npm start
 
