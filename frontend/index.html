@@ -111,7 +111,10 @@
           <div class="bg-white rounded-2xl border border-slate-200 p-4">
             <div class="text-[11px] font-bold text-slate-500 mb-2">비용 항목 <span class="font-normal text-slate-400">(팀=차량 등 다같이 내는 비용은 N빵)</span></div>
             <div id="ed-rows" class="space-y-2"></div>
-            <button id="ed-add-row" class="mt-2 w-full border-2 border-dashed border-slate-300 text-slate-500 text-sm font-semibold rounded-xl py-2.5 hover:border-emerald-400 hover:text-emerald-600">＋ 항목 추가</button>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <button id="ed-add-row" class="border-2 border-dashed border-slate-300 text-slate-500 text-sm font-semibold rounded-xl py-2.5 hover:border-emerald-400 hover:text-emerald-600">＋ 항목 추가</button>
+              <button id="ed-paste" class="border-2 border-dashed border-emerald-300 text-emerald-700 text-sm font-semibold rounded-xl py-2.5 hover:border-emerald-500 hover:bg-emerald-50">📋 붙여넣기로 추가</button>
+            </div>
           </div>
 
           <!-- 환율 -->
@@ -154,6 +157,26 @@
     <!-- 광고 자리 (AdSense) — 실제 배포 + 승인 후 코드 삽입 -->
     <div id="ad-slot" class="hidden text-center text-[10px] text-slate-300 py-3 border-t border-slate-200">
       광고 영역 (서비스 배포 후 Google AdSense 적용 예정)
+    </div>
+  </div>
+
+  <!-- 붙여넣기로 항목 추가 -->
+  <div id="modal-paste" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-5 w-full max-w-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-extrabold text-slate-800">붙여넣기로 항목 추가</h3>
+        <button id="paste-close" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+      <p class="text-[11px] text-slate-500 mb-2">한 줄에 <b>“항목: 금액”</b> 형식으로 붙여넣으세요. 통화 단어(페소·바트·엔·원·달러 등)는 자동 인식, 없으면 이 여행 통화로 들어갑니다.</p>
+      <textarea id="paste-text" rows="7" placeholder="예)
+김형제삼겹살: 2,650페소
+마트: 1,850페소
+골프장 로얄: 3,500페소
+음료 캐디팁: 2,000페소" class="w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-200"></textarea>
+      <div class="flex gap-2 mt-2">
+        <button id="paste-add" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl">항목 추가</button>
+        <button id="paste-cancel" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl">취소</button>
+      </div>
     </div>
   </div>
 

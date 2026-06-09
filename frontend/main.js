@@ -299,6 +299,40 @@
     focusRow(state.trip.rows.length - 1);
   }
 
+  // "항목: 금액[통화]" 줄들을 파싱 → 행 배열. 통화 단어 자동 인식, 없으면 기본 통화.
+  function parsePasted(text, defaultCurrency) {
+    const CURMAP = [
+      [/페소|peso|₱/i, "PHP"],
+      [/바트|밧|baht|฿/i, "THB"],
+      [/엔화|엔|￥|¥|yen|jpy/i, "JPY"],
+      [/위안|元|yuan|cny/i, "CNY"],
+      [/동|dong|vnd|₫/i, "VND"],
+      [/링깃|ringgit|myr/i, "MYR"],
+      [/루피아|idr/i, "IDR"],
+      [/대만|twd/i, "TWD"],
+      [/달러|dollar|usd|\$/i, "USD"],
+      [/원|won|krw|₩/i, "KRW"],
+    ];
+    const rows = [];
+    for (const raw of String(text).split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line) continue;
+      const nums = line.match(/\d[\d,]*(?:\.\d+)?/g);
+      if (!nums) continue;
+      const numStr = nums[nums.length - 1];
+      const amount = Number(numStr.replace(/,/g, ""));
+      if (!Number.isFinite(amount)) continue;
+      const idx = line.lastIndexOf(numStr);
+      const tail = line.slice(idx + numStr.length); // 금액 뒤 단위(페소 등)
+      let currency = defaultCurrency || "KRW";
+      for (const [re, c] of CURMAP) { if (re.test(tail)) { currency = c; break; } }
+      let name = line.slice(0, idx).replace(/[:\-–—=]\s*$/, "").trim();
+      if (!name) name = "항목";
+      rows.push({ name, amount, currency, scope: "person", paid: false });
+    }
+    return rows;
+  }
+
   function usedCurrencies() {
     return [...new Set([state.trip.currency, ...state.trip.rows.map((r) => r.currency)])].filter((c) => c && c !== "KRW");
   }
@@ -510,6 +544,24 @@
       recompute();
     });
     $("ed-add-row").addEventListener("click", addRow);
+    $("ed-paste").addEventListener("click", () => {
+      $("paste-text").value = "";
+      $("modal-paste").classList.remove("hidden");
+      $("paste-text").focus();
+    });
+    const closePaste = () => $("modal-paste").classList.add("hidden");
+    $("paste-close").addEventListener("click", closePaste);
+    $("paste-cancel").addEventListener("click", closePaste);
+    $("modal-paste").addEventListener("click", (e) => { if (e.target === $("modal-paste")) closePaste(); });
+    $("paste-add").addEventListener("click", () => {
+      const parsed = parsePasted($("paste-text").value, state.trip.currency);
+      if (parsed.length === 0) { toast("인식된 항목이 없어요. ‘항목: 금액’ 형식인지 확인하세요"); return; }
+      state.trip.rows.push(...parsed);
+      renderRows();
+      recompute();
+      closePaste();
+      toast(parsed.length + "개 항목을 추가했어요");
+    });
     $("ed-fx-reset").addEventListener("click", () => {
       state.trip.manualFx = {};
       state.lastFxKey = "";
