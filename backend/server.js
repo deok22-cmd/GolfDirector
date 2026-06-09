@@ -11,7 +11,7 @@ import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
-import { register, login, authMiddleware, publicUser } from "./auth.js";
+import { register, login, authMiddleware, adminMiddleware, publicUser } from "./auth.js";
 import { db } from "./db.js";
 import { parseToTrip } from "./anthropic.js";
 
@@ -106,6 +106,33 @@ app.get(P("/api/share/:shareId"), (req, res) => {
     },
   });
 });
+
+// ---- 공개 공지 (앱에서 배너 표시용) ----
+app.get(P("/api/notice"), (_req, res) => res.json({ notice: db.getNotice() }));
+
+// ---- 관리자 (deok22@gmail.com 등 ADMIN_EMAILS) ----
+app.get(P("/api/admin/stats"), adminMiddleware, (_req, res) => {
+  const users = db.listAllUsers();
+  const trips = db.listAllTrips();
+  const today = new Date().toISOString().slice(0, 10);
+  res.json({
+    userCount: users.length,
+    tripCount: trips.length,
+    todaySignups: users.filter((u) => String(u.createdAt).slice(0, 10) === today).length,
+    recentUsers: users.slice(-6).reverse(),
+  });
+});
+app.get(P("/api/admin/users"), adminMiddleware, (_req, res) => res.json({ users: db.listAllUsers() }));
+app.delete(P("/api/admin/users/:id"), adminMiddleware, (req, res) => {
+  db.deleteUserCascade(req.params.id);
+  res.json({ ok: true });
+});
+app.get(P("/api/admin/trips"), adminMiddleware, (_req, res) => res.json({ trips: db.listAllTrips() }));
+app.delete(P("/api/admin/trips/:id"), adminMiddleware, (req, res) => {
+  res.json({ ok: db.deleteAnyTrip(req.params.id) });
+});
+app.get(P("/api/admin/notice"), adminMiddleware, (_req, res) => res.json({ notice: db.getNotice() }));
+app.put(P("/api/admin/notice"), adminMiddleware, (req, res) => res.json({ notice: db.setNotice(req.body?.notice) }));
 
 // ---- (향후/유료) AI 견적 정제 — 로그인 필요 ----
 app.post(P("/api/parse"), authMiddleware, async (req, res) => {

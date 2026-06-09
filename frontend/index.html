@@ -26,7 +26,8 @@
         <span class="text-lg">⛳</span> 골프총무
       </button>
       <div class="flex items-center gap-2 text-xs">
-        <span id="user-email" class="text-emerald-100 max-w-[140px] truncate"></span>
+        <a id="btn-admin" href="admin.html" class="hidden bg-white/20 hover:bg-white/30 rounded-lg px-2.5 py-1 font-semibold">🔧관리자</a>
+        <span id="user-email" class="text-emerald-100 max-w-[120px] truncate"></span>
         <button id="btn-logout" class="bg-white/20 hover:bg-white/30 rounded-lg px-2.5 py-1 font-semibold">로그아웃</button>
       </div>
     </header>
@@ -59,6 +60,7 @@
 
       <!-- ===== 내 여행 목록 ===== -->
       <section id="view-list" class="hidden px-4 py-5">
+        <div id="notice-banner" class="hidden mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-3 py-2"></div>
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-lg font-extrabold">내 여행</h2>
           <button id="btn-new" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm">＋ 새 여행</button>

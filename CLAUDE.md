@@ -88,7 +88,8 @@ GolfDirector/
   - **검증**: 인증+CRUD curl 테스트 통과. (계산기 단독 calculator.js는 main.js로 흡수돼 삭제)
 - ✅ **v2 배포 (완료) — 라이브**: AWS Lightsail(Bitnami)에 Node+pm2+Apache 리버스프록시로 배포. **http://www.deoklabs.xyz/golfChongmu/** 에서 동작. 서브경로 대응(BASE_PATH). 상세는 12번.
 - ✅ **HTTPS (완료)**: bncert로 Let's Encrypt 적용 + http→https/bare→www 리다이렉트. (상세 12번)
-- ⬜ **Phase 3 (다음)**: ① **관리자 페이지**(회원·여행 조회, 통계, 관리) ② AdSense 신청 ③ JSON DB→실DB ④ 비번재설정/구글로그인 ⑤ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
+- ✅ **관리자 페이지 (완료)**: `ADMIN_EMAILS`(=deok22@gmail.com) 계정만 접근. `/golfChongmu/admin.html`(통계·회원목록/삭제·전체여행 조회/삭제·공지). 백엔드 `/api/admin/*`(auth.js `adminMiddleware`, `isAdmin`), 공개 `/api/notice`→앱 상단 배너. 로그인 응답·`/api/auth/me`에 `user.isAdmin` 포함 → 메인 상단 🔧관리자 버튼. **deok22@gmail.com으로 가입/로그인해야 관리자 권한.**
+- ⬜ **Phase 3 (다음)**: ① AdSense 신청 ② JSON DB→실DB ③ 비번재설정/구글로그인 ④ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
 
 ## 8. 다음에 할 일 (Next)
 - 라이브 사용: **http://www.deoklabs.xyz/golfChongmu/** 회원가입 → 여행 만들기/항목입력/환율/카톡 (모바일 포함) 확인

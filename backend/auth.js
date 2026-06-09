@@ -8,13 +8,21 @@ import { db } from "./db.js";
 
 const SECRET = process.env.JWT_SECRET || "dev-insecure-secret-change-me";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isAdmin(email) {
+  return ADMIN_EMAILS.includes(String(email || "").toLowerCase());
+}
 
 function httpErr(status, message) {
   const e = new Error(message);
   e.status = status;
   return e;
 }
-const publicUser = (u) => ({ id: u.id, email: u.email });
+const publicUser = (u) => ({ id: u.id, email: u.email, isAdmin: isAdmin(u.email) });
 const sign = (u) => jwt.sign({ uid: u.id }, SECRET, { expiresIn: "60d" });
 
 export function register({ email, password }) {
@@ -46,6 +54,15 @@ export function authMiddleware(req, res, next) {
   } catch {
     res.status(401).json({ error: "로그인이 필요합니다." });
   }
+}
+
+// 관리자 전용 미들웨어
+export function adminMiddleware(req, res, next) {
+  authMiddleware(req, res, () => {
+    const u = db.findUserById(req.userId);
+    if (!u || !isAdmin(u.email)) return res.status(403).json({ error: "관리자 권한이 없습니다." });
+    next();
+  });
 }
 
 export { publicUser };

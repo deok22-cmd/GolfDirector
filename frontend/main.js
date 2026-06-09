@@ -13,7 +13,11 @@
   const _selfSrc = (document.currentScript && document.currentScript.src) || (location.origin + location.pathname);
   const API_BASE = _selfSrc.replace(/\/[^/]*$/, ""); // .../golfChongmu (main.js 디렉토리, 끝슬래시 제거)
 
-  const session = { token: localStorage.getItem("gd_token") || "", email: localStorage.getItem("gd_email") || "" };
+  const session = {
+    token: localStorage.getItem("gd_token") || "",
+    email: localStorage.getItem("gd_email") || "",
+    isAdmin: localStorage.getItem("gd_admin") === "1",
+  };
   let authMode = "login"; // login | register
   const liveFx = {}; // 통화 → 원 (실시간)
   let fxLoaded = false;
@@ -110,8 +114,10 @@
       const { token, user } = await api("POST", "/api/auth/" + (authMode === "login" ? "login" : "register"), { email, password });
       session.token = token;
       session.email = user.email;
+      session.isAdmin = !!user.isAdmin;
       localStorage.setItem("gd_token", token);
       localStorage.setItem("gd_email", user.email);
+      localStorage.setItem("gd_admin", user.isAdmin ? "1" : "0");
       enterApp();
     } catch (e) {
       const el = $("auth-error");
@@ -122,9 +128,20 @@
   function logout() {
     session.token = "";
     session.email = "";
+    session.isAdmin = false;
     localStorage.removeItem("gd_token");
     localStorage.removeItem("gd_email");
+    localStorage.removeItem("gd_admin");
     showView("auth");
+  }
+
+  async function loadNotice() {
+    try {
+      const { notice } = await api("GET", "/api/notice");
+      const el = $("notice-banner");
+      if (notice) { el.textContent = "📢 " + notice; el.classList.remove("hidden"); }
+      else el.classList.add("hidden");
+    } catch {}
   }
 
   // ---------------- 목록 ----------------
@@ -452,8 +469,16 @@
   // ---------------- 시작 ----------------
   function enterApp() {
     $("user-email").textContent = session.email;
+    $("btn-admin").classList.toggle("hidden", !session.isAdmin);
+    loadNotice();
     loadList();
     if (!fxLoaded) fetchLiveRates();
+    // 토큰 복원 로그인 시 isAdmin 최신화
+    api("GET", "/api/auth/me").then(({ user }) => {
+      session.isAdmin = !!user.isAdmin;
+      localStorage.setItem("gd_admin", user.isAdmin ? "1" : "0");
+      $("btn-admin").classList.toggle("hidden", !session.isAdmin);
+    }).catch((e) => { if (e.status === 401) logout(); });
   }
 
   function wire() {

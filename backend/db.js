@@ -119,4 +119,52 @@ export const db = {
     writeAll("trips", trips);
     return trips[idx];
   },
+
+  // ---- 관리자 ----
+  listAllUsers() {
+    const trips = readAll("trips");
+    return readAll("users").map((u) => ({
+      id: u.id,
+      email: u.email,
+      createdAt: u.createdAt,
+      tripCount: trips.filter((t) => t.userId === u.id).length,
+    }));
+  },
+  deleteUserCascade(id) {
+    writeAll("users", readAll("users").filter((u) => u.id !== id));
+    writeAll("trips", readAll("trips").filter((t) => t.userId !== id));
+    return true;
+  },
+  listAllTrips() {
+    const emap = Object.fromEntries(readAll("users").map((u) => [u.id, u.email]));
+    return readAll("trips").map((t) => ({
+      id: t.id,
+      title: t.title,
+      country: t.country,
+      partySize: t.partySize,
+      rows: t.rows,
+      fxSnapshot: t.fxSnapshot || {},
+      shareId: t.shareId || null,
+      owner: emap[t.userId] || "(삭제됨)",
+      updatedAt: t.updatedAt,
+    }));
+  },
+  deleteAnyTrip(id) {
+    const trips = readAll("trips");
+    const next = trips.filter((t) => t.id !== id);
+    const removed = next.length !== trips.length;
+    if (removed) writeAll("trips", next);
+    return removed;
+  },
+  getNotice() {
+    try {
+      return JSON.parse(readFileSync(fileOf("settings"), "utf8")).notice || "";
+    } catch {
+      return "";
+    }
+  },
+  setNotice(text) {
+    writeAll("settings", { notice: String(text || "").slice(0, 500) });
+    return String(text || "").slice(0, 500);
+  },
 };
