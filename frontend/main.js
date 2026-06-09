@@ -56,7 +56,14 @@
   async function api(method, path, body) {
     const headers = { "content-type": "application/json" };
     if (session.token) headers.authorization = "Bearer " + session.token;
-    const r = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    let r;
+    try {
+      r = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    } catch {
+      const e = new Error("서버에 연결할 수 없어요. ‘골프총무-실행.bat’으로 서버를 켠 뒤, 주소창에 http://localhost:8787 로 접속해 주세요.");
+      e.status = 0;
+      throw e;
+    }
     const j = await r.json().catch(() => ({}));
     if (!r.ok) {
       const e = new Error(j.error || `오류 ${r.status}`);

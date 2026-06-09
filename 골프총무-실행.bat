@@ -40,8 +40,8 @@ if not exist .env (
 )
 
 REM --- 4) 브라우저 열고 서버 시작 ---
-echo [3/3] 골프총무를 시작합니다...
-start "" "%~dp0frontend\index.html"
+echo [3/3] 골프총무를 시작합니다... (잠시 후 브라우저가 자동으로 열려요)
+start "" /min cmd /c "ping -n 4 127.0.0.1 >nul & start http://localhost:8787"
 echo.
 echo  ✔ 준비 완료! 이 검은 창은 그냥 두세요 (닫으면 서버가 멈춰요).
 echo    브라우저에서 회원가입 후 여행을 만들면 됩니다.
