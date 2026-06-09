@@ -70,6 +70,10 @@
       if (paid) paidGroup += itemGroup;
       else unpaidGroup += itemGroup;
     }
+    // 인원별 '입금완료' 오버라이드: 그 사람 미지급은 0으로
+    if (Array.isArray(trip.memberPaid)) {
+      per.forEach((p, i) => { if (trip.memberPaid[i]) { p.paid = p.total; p.unpaid = 0; } });
+    }
     return {
       members: per,
       group,
@@ -280,6 +284,7 @@
       startDate: "",
       endDate: "",
       members: ["", "", "", ""],
+      memberPaid: [false, false, false, false],
       partySize: 4,
       manualFx: {},
       bankName: "",
@@ -300,6 +305,9 @@
       state.trip.members = Array.from({ length: Math.max(1, state.trip.partySize || 1) }, () => "");
     }
     state.trip.partySize = state.trip.members.length;
+    // 인원별 입금완료 배열을 멤버 길이에 맞춤
+    const mp0 = Array.isArray(state.trip.memberPaid) ? state.trip.memberPaid : [];
+    state.trip.memberPaid = state.trip.members.map((_, i) => mp0[i] === true);
     state.lastFxKey = "";
     $("ed-title").value = state.trip.title || "";
     $("ed-start").value = state.trip.startDate || "";
@@ -340,6 +348,7 @@
         const i = Number(b.dataset.mdel);
         if (state.trip.members.length <= 1) return;
         state.trip.members.splice(i, 1);
+        if (Array.isArray(state.trip.memberPaid)) state.trip.memberPaid.splice(i, 1);
         state.trip.partySize = state.trip.members.length;
         // 특정인 payer 인덱스 보정
         for (const r of state.trip.rows) {
@@ -356,6 +365,8 @@
   }
   function addMember() {
     state.trip.members.push("");
+    if (!Array.isArray(state.trip.memberPaid)) state.trip.memberPaid = [];
+    state.trip.memberPaid.push(false);
     state.trip.partySize = state.trip.members.length;
     renderMembers();
     renderRows();
@@ -544,14 +555,42 @@
     $("ed-g-all").textContent = won(r.group);
     $("ed-g-paid").textContent = won(r.paidGroup);
     $("ed-g-unpaid").textContent = won(r.unpaidGroup);
+    const mp = state.trip.memberPaid || [];
     $("ed-members-result").innerHTML = r.members
-      .map(
-        (p) => `<div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-        <span class="text-sm font-semibold text-slate-700">${escapeHtml(p.name)}</span>
-        <span class="text-sm"><b class="text-slate-800">${won(p.total)}</b>${p.unpaid > 0 ? ` <span class="text-[11px] text-rose-500">미지급 ${won(p.unpaid)}</span>` : ` <span class="text-[11px] text-emerald-600">완납</span>`}</span>
-      </div>`
-      )
+      .map((p, i) => {
+        let right;
+        if (p.unpaid > 0) {
+          right = `<span class="text-[11px] text-rose-500">미지급 ${won(p.unpaid)}</span>
+            <button data-pay="${i}" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg px-2 py-1">입금완료</button>`;
+        } else if (mp[i]) {
+          right = `<button data-pay="${i}" class="text-[11px] text-emerald-700 font-bold">✓ 입금완료</button>`;
+        } else {
+          right = `<span class="text-[11px] text-emerald-600 font-semibold">완납</span>`;
+        }
+        return `<div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+          <span class="text-sm font-semibold text-slate-700">${escapeHtml(p.name)}</span>
+          <div class="flex items-center gap-2"><b class="text-sm text-slate-800">${won(p.total)}</b> ${right}</div>
+        </div>`;
+      })
       .join("");
+    $("ed-members-result").querySelectorAll("[data-pay]").forEach((b) =>
+      b.addEventListener("click", () => markMemberPaid(Number(b.dataset.pay)))
+    );
+  }
+
+  // 인원 '입금완료' 토글. 모두 입금되면 항목 전부 지급완료로.
+  function markMemberPaid(i) {
+    if (!Array.isArray(state.trip.memberPaid)) state.trip.memberPaid = state.trip.members.map(() => false);
+    state.trip.memberPaid[i] = !state.trip.memberPaid[i];
+    const r = computeTrip(state.trip);
+    if (r.members.every((p) => p.unpaid === 0) && state.trip.rows.some((row) => !row.paid)) {
+      state.trip.rows.forEach((row) => (row.paid = true));
+      state.trip.memberPaid = state.trip.members.map(() => false);
+      renderRows();
+      toast("모두 입금완료 — 모든 항목이 지급완료로 바뀌었어요");
+    }
+    updateResult();
+    saveTrip(true);
   }
 
   async function saveTrip(silent) {

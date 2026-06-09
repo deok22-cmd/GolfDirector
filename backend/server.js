@@ -99,6 +99,7 @@ app.get(P("/api/share/:shareId"), (req, res) => {
       endDate: t.endDate || "",
       partySize: t.partySize,
       members: t.members || [],
+      memberPaid: t.memberPaid || [],
       rows: t.rows,
       fxSnapshot: t.fxSnapshot || {},
       bankName: t.bankName || "",

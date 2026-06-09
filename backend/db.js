@@ -26,6 +26,8 @@ function sanitizeTrip(d) {
     ? d.members.slice(0, 50).map((n) => String(n || "").slice(0, 40))
     : [];
   const partySize = members.length || Math.max(1, Number(d.partySize) || 1);
+  const mp = Array.isArray(d.memberPaid) ? d.memberPaid : [];
+  const memberPaid = members.map((_, i) => mp[i] === true); // 인원별 입금완료
   return {
     title: String(d.title || "새 여행").slice(0, 100),
     country: String(d.country || ""),
@@ -33,6 +35,7 @@ function sanitizeTrip(d) {
     startDate: typeof d.startDate === "string" ? d.startDate.slice(0, 10) : "",
     endDate: typeof d.endDate === "string" ? d.endDate.slice(0, 10) : "",
     members,
+    memberPaid,
     partySize,
     fxMode: d.fxMode === "manual" ? "manual" : "auto",
     manualFx: d.manualFx && typeof d.manualFx === "object" ? d.manualFx : {},

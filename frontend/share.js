@@ -37,6 +37,7 @@
       else { per.forEach((p) => addS(p, krw, paid)); ig = krw * N; }
       g += ig; if (paid) gp += ig; else gu += ig;
     }
+    if (Array.isArray(t.memberPaid)) per.forEach((p, i) => { if (t.memberPaid[i]) p.unpaid = 0; });
     return { members: per, group: g, paidGroup: gp, unpaidGroup: gu };
   }
 
