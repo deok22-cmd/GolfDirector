@@ -9,8 +9,9 @@
   const { FX_RATES, CURRENCY_SYMBOL, COUNTRY_CATALOG } = window.GolfDirectorData;
   const CURRENCIES = Object.keys(CURRENCY_SYMBOL);
   const $ = (id) => document.getElementById(id);
-  const API_BASE =
-    location.protocol === "file:" ? "http://localhost:8787" : location.origin;
+  // API 주소를 main.js 자신의 위치에서 도출 → 루트(/)든 서브경로(/golfChongmu/)든 자동 대응
+  const _selfSrc = (document.currentScript && document.currentScript.src) || (location.origin + location.pathname);
+  const API_BASE = _selfSrc.replace(/\/[^/]*$/, ""); // .../golfChongmu (main.js 디렉토리, 끝슬래시 제거)
 
   const session = { token: localStorage.getItem("gd_token") || "", email: localStorage.getItem("gd_email") || "" };
   let authMode = "login"; // login | register

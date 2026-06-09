@@ -83,10 +83,12 @@ GolfDirector/
   - **요구**: 회원가입 + 개인별 서버 저장, 여행 CRUD, 국가→통화 자동, 실시간+수동 환율, 항목 빠른입력, N빵 전달, 모바일, 무료+AdSense(후일 유료).
   - **구현**: 백엔드 인증(bcryptjs+JWT) + 사용자별 trip CRUD(JSON DB). 프론트 재작성(`index.html`+`main.js`): 로그인/목록/여행편집 3뷰, 모바일 우선, Enter로 다음 행, 1인/팀 N빵, 실시간/수동 환율, 카톡 정산. AdSense 자리(`#ad-slot`) 마련.
   - **검증**: 인증+CRUD curl 테스트 통과. (계산기 단독 calculator.js는 main.js로 흡수돼 삭제)
-- ⬜ **Phase 3 (다음)**: ① **클라우드 배포**(URL만 주면 끝) → 그 후 AdSense 신청 ② JSON DB→실DB(SQLite/Postgres) ③ 비번재설정/구글로그인 ④ 유료: 견적서 AI 자동입력(/api/parse 재사용)·엑셀 내보내기·개인별 지출 정산
+- ✅ **v2 배포 (완료) — 라이브**: AWS Lightsail(Bitnami)에 Node+pm2+Apache 리버스프록시로 배포. **http://www.deoklabs.xyz/golfChongmu/** 에서 동작. 서브경로 대응(BASE_PATH). 상세는 12번.
+- ⬜ **Phase 3 (다음)**: ① HTTPS 적용(현재 http만; bncert/Let's Encrypt) ② AdSense 신청 ③ JSON DB→실DB ④ 비번재설정/구글로그인 ⑤ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
 
 ## 8. 다음에 할 일 (Next)
-- 로컬 검증: `골프총무-실행.bat` → `http://localhost:8787` → 회원가입 → 여행 만들기/항목입력/환율/카톡 확인 (모바일 화면도)
+- 라이브 사용: **http://www.deoklabs.xyz/golfChongmu/** 회원가입 → 여행 만들기/항목입력/환율/카톡 (모바일 포함) 확인
+- 로컬 개발: `골프총무-실행.bat` → `http://localhost:8787`
 - 계산기가 "계산기보다 쉽다"가 확인되면 → 클라우드 배포(설치 없는 웹앱 완성)로
 
 ## 10. 입력 소스 — 멀티모달 설계 방침 (중요)
@@ -106,8 +108,20 @@ GolfDirector/
 - **저장**: `backend/trips.json`(git 제외). 대시보드는 로드 시 `/api/trips` 먼저 시도, 실패하면 mockData 폴백. trip_id/created_at은 서버가 부여(스키마에서 제외).
 - **주의**: 익스텐션은 번들러가 없어 백엔드에서만 공식 SDK 사용(데이터 플레인). 익스텐션은 raw fetch로 백엔드만 호출(Anthropic 직접 호출 안 함 = 키 비노출).
 
+## 12. 배포 (라이브 서버 — 중요)
+- **라이브 URL**: http://www.deoklabs.xyz/golfChongmu/  (현재 **http만** 동작, https는 미설정)
+- **서버**: AWS Lightsail Bitnami. IP `52.78.54.161`, user `bitnami`, SSH 키 `D:\lightsail\LAMP_deok22.pem`. (Apache 유저=daemon, Node v24, pm2 v7 설치됨. PHP도 있으나 미사용 — 이 서버 표준은 Node+pm2+Apache프록시.)
+- **앱 위치**: `/home/bitnami/golfChongmu/` (`backend/` + `frontend/`). 기존 `1688` 앱과 동일 패턴.
+- **구동**: pm2 name `golfChongmu`, **포트 3001**, env `BASE_PATH=/golfChongmu`(+JWT_SECRET) in `backend/.env`. → `pm2 restart golfChongmu`, 영속 `pm2 save`.
+- **Apache 프록시**: `/opt/bitnami/apache/conf/vhosts/golfchongmu-proxy.conf` → `ProxyPass /golfChongmu http://127.0.0.1:3001/golfChongmu`. (httpd.conf가 `vhosts/*.conf` IncludeOptional)
+- **서브경로 대응**: server.js `BASE_PATH`로 모든 라우트 prefix + 무슬래시→슬래시 리다이렉트. main.js는 자기 `<script src>` 위치에서 API_BASE 자동 도출(루트/서브경로 모두 대응).
+- **사용자 데이터**: `/home/bitnami/golfChongmu/backend/data/{users,trips}.json` (서버에만, git 제외).
+- **코드 갱신(재배포)**: 로컬에서 파일 수정 → `scp -i <키> <파일> bitnami@52.78.54.161:/home/bitnami/golfChongmu/<경로>` → 프론트(html/js)는 즉시 반영, 백엔드(.js) 바뀌면 `ssh ... 'pm2 restart golfChongmu'`. (번들 배포는 `tar`로 묶어 scp 후 서버에서 풀기)
+- **주의**: 같은 Apache가 `1688`·`flight`·`discount` 등 타 앱도 서빙 → 프록시 conf는 `golfChongmu` 전용으로만, apache 재시작 전 `apachectl configtest` 필수.
+
 ## 9. 작업 컨벤션
 - 주석/UI 텍스트는 한국어. 코드 식별자는 영어.
 - 프론트/익스텐션은 번들러 없음 — 순수 `<script>` 태그, 전역은 `window.GolfDirectorData` / `window.GolfDirector`. 백엔드는 ESM(Node).
 - 새 통화 추가 시 `FX_RATES` + `CURRENCY_SYMBOL`(mockData.js) 둘 다 갱신.
 - 모델/프롬프트/스키마 변경은 `backend/anthropic.js` · `backend/schema.js`에서.
+- **배포 갱신은 12번 참고** (scp + pm2 restart).
