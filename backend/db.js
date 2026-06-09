@@ -22,11 +22,16 @@ const readAll = (name) => {
 const writeAll = (name, arr) => writeFileSync(fileOf(name), JSON.stringify(arr, null, 2), "utf8");
 
 function sanitizeTrip(d) {
+  const members = Array.isArray(d.members)
+    ? d.members.slice(0, 50).map((n) => String(n || "").slice(0, 40))
+    : [];
+  const partySize = members.length || Math.max(1, Number(d.partySize) || 1);
   return {
     title: String(d.title || "새 여행").slice(0, 100),
     country: String(d.country || ""),
     currency: String(d.currency || "KRW"),
-    partySize: Math.max(1, Number(d.partySize) || 1),
+    members,
+    partySize,
     fxMode: d.fxMode === "manual" ? "manual" : "auto",
     manualFx: d.manualFx && typeof d.manualFx === "object" ? d.manualFx : {},
     bankName: String(d.bankName || "").slice(0, 40),
@@ -37,7 +42,9 @@ function sanitizeTrip(d) {
           name: String(r.name || "").slice(0, 80),
           amount: r.amount === null || r.amount === "" ? null : Number(r.amount),
           currency: String(r.currency || "KRW"),
-          scope: r.scope === "team" ? "team" : "person",
+          // 1인(person) / 팀N분의1(team) / 특정인(specific)
+          scope: r.scope === "team" ? "team" : r.scope === "specific" ? "specific" : "person",
+          payer: Number.isInteger(r.payer) ? r.payer : null, // specific일 때 member 인덱스
           paid: r.paid === true, // 지급완료 여부 (기본 미지급)
         }))
       : [],

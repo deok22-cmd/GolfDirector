@@ -21,36 +21,23 @@
     <div id="loading" class="text-center text-slate-400 py-20 text-sm">불러오는 중…</div>
 
     <main id="content" class="hidden px-4 py-5 space-y-4">
-      <!-- 헤더 + 6분할 요약 -->
+      <!-- 헤더 + 전체 요약 -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4">
         <div class="text-[11px] font-bold text-emerald-700"><span id="s-owner"></span></div>
         <h1 id="s-title" class="text-xl font-extrabold text-slate-800 mt-0.5"></h1>
         <div id="s-sub" class="text-xs text-slate-400 mt-0.5"></div>
-        <div class="mt-3 bg-emerald-600 text-white rounded-xl p-4">
-          <div class="grid grid-cols-[2.6rem_1fr_1fr_1fr] gap-x-1.5 gap-y-1 items-center text-center">
-            <div></div>
-            <div class="text-[10px] text-emerald-100">전체</div>
-            <div class="text-[10px] text-emerald-100">지급완료</div>
-            <div class="text-[10px] text-emerald-100">미지급</div>
-            <div class="text-[10px] text-emerald-100 text-left font-bold">1인당</div>
-            <div id="s-pp-all" class="text-base font-extrabold">₩0</div>
-            <div id="s-pp-paid" class="text-xs font-bold text-emerald-50">₩0</div>
-            <div id="s-pp-unpaid" class="text-xs font-bold text-yellow-200">₩0</div>
-            <div class="text-[10px] text-emerald-100 text-left font-bold">전체</div>
-            <div id="s-g-all" class="text-base font-bold">₩0</div>
-            <div id="s-g-paid" class="text-xs font-bold text-emerald-50">₩0</div>
-            <div id="s-g-unpaid" class="text-xs font-bold text-yellow-200">₩0</div>
-          </div>
-          <div class="text-[10px] text-emerald-100 text-right mt-1">일행 <span id="s-ppl"></span>명 기준</div>
+        <div class="mt-3 bg-emerald-600 text-white rounded-xl p-4 grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-white/10 rounded-lg py-1.5"><div class="text-[10px] text-emerald-100">전체 합계</div><div id="s-g-all" class="text-sm font-extrabold">₩0</div></div>
+          <div class="bg-white/10 rounded-lg py-1.5"><div class="text-[10px] text-emerald-100">지급완료</div><div id="s-g-paid" class="text-sm font-bold text-emerald-50">₩0</div></div>
+          <div class="bg-white/10 rounded-lg py-1.5"><div class="text-[10px] text-emerald-100">미지급</div><div id="s-g-unpaid" class="text-sm font-bold text-yellow-200">₩0</div></div>
         </div>
       </div>
 
-      <!-- 내 미지급 송금 -->
+      <!-- 개인별 정산 + 송금 -->
       <div class="bg-white rounded-2xl border-2 border-rose-200 p-4">
-        <div class="text-[11px] font-bold text-slate-500">내가 보낼 금액 (1인당 미지급)</div>
-        <div id="s-mypay" class="text-2xl font-extrabold text-rose-600">₩0</div>
-        <div id="s-account" class="text-sm text-slate-600 mt-1.5"></div>
-        <button id="s-copy" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl">📋 계좌·금액 복사 (토스로 송금)</button>
+        <div class="text-[11px] font-bold text-slate-500 mb-1">👥 개인별 정산</div>
+        <div id="s-account-note" class="text-[11px] text-slate-400 mb-2"></div>
+        <div id="s-members"></div>
       </div>
 
       <!-- 항목 상세 -->

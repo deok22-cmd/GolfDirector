@@ -96,6 +96,7 @@ app.get(P("/api/share/:shareId"), (req, res) => {
       country: t.country,
       currency: t.currency,
       partySize: t.partySize,
+      members: t.members || [],
       rows: t.rows,
       fxSnapshot: t.fxSnapshot || {},
       bankName: t.bankName || "",

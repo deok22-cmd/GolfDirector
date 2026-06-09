@@ -53,9 +53,10 @@ GolfDirector/
 
 ## 5. 데이터 모델 (v2 — 서버 저장)
 - **user**: `{ id, email, passwordHash(bcrypt), createdAt }` — 비밀번호 평문 저장 안 함.
-- **trip**: `{ id, userId, title, country(한글), currency, partySize, fxMode, manualFx{}, bankName, accountNumber, accountHolder, rows[], shareId?, fxSnapshot?, createdAt, updatedAt }`
-- **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"|"team"), paid(bool=지급완료) }`
-- **6값 표시**(에디터 하단 + 공유페이지): `1인당`·`전체` × `전체/지급완료/미지급` (computeTrip이 perPerson·paidPerPerson·unpaidPerPerson·group·paidGroup·unpaidGroup 반환).
+- **trip**: `{ id, userId, title, country, currency, members[](일행 이름, 빈값이면 A·B·C), partySize(=members.length), fxMode, manualFx{}, bankName, accountNumber, accountHolder, rows[], shareId?, fxSnapshot?, createdAt, updatedAt }`
+- **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"=각자1인가·"team"=N분의1·"specific"=특정인), payer(specific일 때 member 인덱스), paid(bool) }`
+- **개인별 정산**(에디터 + 공유페이지): `computeTrip`이 `members:[{name,total,paid,unpaid}]` + 전체 `group/paidGroup/unpaidGroup` 반환. person=각 멤버 +amount, team=amount/N, specific=payer만 +amount. 하단엔 전체 3값(전체/지급완료/미지급), 본문엔 개인별 목록.
+- **공유페이지 개인별 송금**: 멤버별 총액·미지급 + 본인 행 [복사] → `은행 계좌 (예금주) ₩미지급액` 복사(토스 송금). 옛 trip(members 없음)은 partySize로 A·B·C 폴백.
 - **총무 계좌**: bankName/accountNumber/accountHolder를 여행마다 입력 → 공유페이지에서 "내 미지급(1인당)" + **[계좌·금액 복사]**(`은행 계좌 (예금주) ₩미지급액`) → 토스 등 붙여넣기 송금.
 - **공유 결과페이지**: `POST /api/trips/:id/share`(로그인) → `shareId`+`fxSnapshot` 저장. `GET /api/share/:shareId`(공개·무인증, 계좌 포함) → `share.html?id=` 읽기전용(총무명=이메일앞, 6값, 지급상태, 계좌복사). 카톡엔 요약 대신 이 URL → 클릭 유입(광고). http 환경이라 복사는 execCommand 폴백.
 - **계산식**: `1인당 = Σ(person항목 원화) + Σ(team항목 원화)/인원`, `합계 = 1인당 × 인원`. 원화환산은 `rateOf = manualFx[cur] ?? liveFx[cur] ?? FX_RATES[cur]`.

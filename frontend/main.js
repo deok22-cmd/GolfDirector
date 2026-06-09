@@ -32,23 +32,47 @@
     if (c === "KRW") return 1;
     return (trip.manualFx && trip.manualFx[c]) ?? liveFx[c] ?? FX_RATES[c] ?? 0;
   }
+  // 일행 이름: 비어있으면 A,B,C..
+  function letter(i) { return i < 26 ? String.fromCharCode(65 + i) : "참가자" + (i + 1); }
+  function defaultMembers(n) { return Array.from({ length: Math.max(1, n || 1) }, () => ""); }
+  function tripMembers(trip) {
+    return Array.isArray(trip.members) && trip.members.length ? trip.members : defaultMembers(trip.partySize);
+  }
+  function addShare(p, s, paid) { p.total += s; if (paid) p.paid += s; else p.unpaid += s; }
+
+  // 항목 분류: person(각자 1인가격) / team(N분의1) / specific(특정인 payer)
   function computeTrip(trip) {
-    const party = Math.max(1, Number(trip.partySize) || 1);
-    let pp = 0, ppPaid = 0, ppUnpaid = 0;
+    const names = tripMembers(trip);
+    const N = names.length || 1;
+    const per = names.map((nm, i) => ({ name: (nm && String(nm).trim()) || letter(i), total: 0, paid: 0, unpaid: 0 }));
+    let group = 0, paidGroup = 0, unpaidGroup = 0;
     for (const r of trip.rows || []) {
       const krw = r.amount == null ? 0 : r.amount * rateOf(trip, r.currency);
-      const c = r.scope === "team" ? krw / party : krw;
-      pp += c;
-      if (r.paid) ppPaid += c;
-      else ppUnpaid += c;
+      const paid = !!r.paid;
+      let itemGroup;
+      if (r.scope === "team") {
+        const s = krw / N;
+        per.forEach((p) => addShare(p, s, paid));
+        itemGroup = krw;
+      } else if (r.scope === "specific") {
+        let i = Number.isInteger(r.payer) ? r.payer : 0;
+        if (i < 0 || i >= N) i = 0;
+        addShare(per[i], krw, paid);
+        itemGroup = krw;
+      } else {
+        per.forEach((p) => addShare(p, krw, paid));
+        itemGroup = krw * N;
+      }
+      group += itemGroup;
+      if (paid) paidGroup += itemGroup;
+      else unpaidGroup += itemGroup;
     }
     return {
-      perPerson: pp,
-      group: pp * party,
-      paidGroup: ppPaid * party,
-      unpaidGroup: ppUnpaid * party,
-      paidPerPerson: ppPaid,
-      unpaidPerPerson: ppUnpaid,
+      members: per,
+      group,
+      paidGroup,
+      unpaidGroup,
+      perPerson: group / N,
       hasMissing: (trip.rows || []).some((r) => r.amount == null && (r.name || "").trim()),
     };
   }
@@ -186,14 +210,15 @@
       title: "",
       country,
       currency: catalogCurrency(country) || "KRW",
+      members: ["", "", "", ""],
       partySize: 4,
       manualFx: {},
       bankName: "",
       accountNumber: "",
       accountHolder: "",
       rows: [
-        { name: "패키지(항공+숙박+그린피)", amount: null, currency: "KRW", scope: "person" },
-        { name: "캐디팁", amount: null, currency: catalogCurrency(country) || "KRW", scope: "person" },
+        { name: "패키지(항공+숙박+그린피)", amount: null, currency: "KRW", scope: "person", payer: null },
+        { name: "캐디팁", amount: null, currency: catalogCurrency(country) || "KRW", scope: "person", payer: null },
       ],
     };
   }
@@ -201,17 +226,69 @@
   function openEditor(trip) {
     state.trip = trip ? JSON.parse(JSON.stringify(trip)) : newTrip();
     if (!state.trip.manualFx) state.trip.manualFx = {};
+    // 멤버 배열 보정 (옛 여행은 partySize만 있음 → 빈 이름으로 채움)
+    if (!Array.isArray(state.trip.members) || state.trip.members.length === 0) {
+      state.trip.members = Array.from({ length: Math.max(1, state.trip.partySize || 1) }, () => "");
+    }
+    state.trip.partySize = state.trip.members.length;
     state.lastFxKey = "";
     $("ed-title").value = state.trip.title || "";
-    $("ed-party").value = state.trip.partySize || 1;
     $("ed-bank").value = state.trip.bankName || "";
     $("ed-holder").value = state.trip.accountHolder || "";
     $("ed-account").value = state.trip.accountNumber || "";
     $("ed-delete").classList.toggle("hidden", !state.trip.id);
     fillCountrySelect();
+    renderMembers();
     renderRows();
     recompute();
     showView("editor");
+  }
+
+  // ---- 일행(멤버) 편집 ----
+  function renderMembers() {
+    const wrap = $("ed-members");
+    const m = state.trip.members;
+    wrap.innerHTML = m
+      .map(
+        (nm, i) => `<div class="flex items-center gap-2">
+        <span class="text-[11px] text-slate-400 w-4 text-center">${i + 1}</span>
+        <input data-mi="${i}" type="text" value="${escapeAttr(nm)}" placeholder="${letter(i)}"
+          class="flex-1 text-sm border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+        <button data-mdel="${i}" class="text-slate-300 hover:text-rose-500 text-lg px-1 ${m.length <= 1 ? "invisible" : ""}">✕</button>
+      </div>`
+      )
+      .join("");
+    wrap.querySelectorAll("[data-mi]").forEach((el) =>
+      el.addEventListener("input", (e) => {
+        state.trip.members[Number(e.target.dataset.mi)] = e.target.value;
+        updateResult();
+      })
+    );
+    wrap.querySelectorAll("[data-mdel]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const i = Number(b.dataset.mdel);
+        if (state.trip.members.length <= 1) return;
+        state.trip.members.splice(i, 1);
+        state.trip.partySize = state.trip.members.length;
+        // 특정인 payer 인덱스 보정
+        for (const r of state.trip.rows) {
+          if (r.scope === "specific" && Number.isInteger(r.payer)) {
+            if (r.payer === i) r.payer = 0;
+            else if (r.payer > i) r.payer--;
+          }
+        }
+        renderMembers();
+        renderRows();
+        recompute();
+      })
+    );
+  }
+  function addMember() {
+    state.trip.members.push("");
+    state.trip.partySize = state.trip.members.length;
+    renderMembers();
+    renderRows();
+    recompute();
   }
 
   function fillCountrySelect() {
@@ -234,15 +311,20 @@
           <button data-paid="${i}" class="text-[11px] font-bold px-2 py-1.5 rounded-lg whitespace-nowrap ${r.paid ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}">${r.paid ? "지급완료" : "미지급"}</button>
           <button data-del="${i}" class="text-slate-300 hover:text-rose-500 text-lg px-1">✕</button>
         </div>
-        <div class="col-span-2 grid grid-cols-[1fr_84px_92px] gap-2">
+        <div class="col-span-2 grid grid-cols-[1fr_78px_92px] gap-2">
           <input data-i="${i}" data-f="amount" type="text" inputmode="numeric" value="${r.amount == null ? "" : r.amount.toLocaleString()}" placeholder="금액"
             class="row-in text-right border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
           <select data-i="${i}" data-f="currency" class="row-in border border-slate-300 rounded-lg px-1 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200">${currencyOptions(r.currency, main)}</select>
           <select data-i="${i}" data-f="scope" class="row-in border border-slate-300 rounded-lg px-1 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200">
             <option value="person" ${r.scope === "person" ? "selected" : ""}>1인</option>
             <option value="team" ${r.scope === "team" ? "selected" : ""}>팀</option>
+            <option value="specific" ${r.scope === "specific" ? "selected" : ""}>특정인</option>
           </select>
         </div>
+        ${r.scope === "specific" ? `<div class="col-span-2">
+          <select data-i="${i}" data-f="payer" class="row-in w-full border border-emerald-300 rounded-lg px-2 py-2 bg-emerald-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200">
+            ${state.trip.members.map((nm, mi) => `<option value="${mi}" ${(Number.isInteger(r.payer) ? r.payer : 0) === mi ? "selected" : ""}>지불자: ${escapeHtml((nm && nm.trim()) || letter(mi))}</option>`).join("")}
+          </select></div>` : ""}
       </div>`
       )
       .join("");
@@ -287,13 +369,23 @@
       const c = e.target.value.replace(/[,\s]/g, "");
       row.amount = c === "" ? null : Number(c);
       if (Number.isNaN(row.amount)) row.amount = null;
+    } else if (f === "scope") {
+      row.scope = e.target.value;
+      if (row.scope === "specific" && !Number.isInteger(row.payer)) row.payer = 0;
+      renderRows(); // 특정인 → 지불자 선택칸 표시/숨김
+      recompute();
+      return;
+    } else if (f === "payer") {
+      row.payer = Number(e.target.value);
+      recompute();
+      return;
     } else {
       row[f] = e.target.value;
     }
     recompute();
   }
   function addRow() {
-    state.trip.rows.push({ name: "", amount: null, currency: state.trip.currency, scope: "person" });
+    state.trip.rows.push({ name: "", amount: null, currency: state.trip.currency, scope: "person", payer: null });
     renderRows();
     recompute();
     focusRow(state.trip.rows.length - 1);
@@ -378,19 +470,17 @@
   }
   function updateResult() {
     const r = computeTrip(state.trip);
-    $("ed-pp-all").textContent = won(r.perPerson);
-    $("ed-pp-paid").textContent = won(r.paidPerPerson);
-    $("ed-pp-unpaid").textContent = won(r.unpaidPerPerson);
     $("ed-g-all").textContent = won(r.group);
     $("ed-g-paid").textContent = won(r.paidGroup);
     $("ed-g-unpaid").textContent = won(r.unpaidGroup);
-    $("ed-ppl-label").textContent = state.trip.partySize;
-  }
-
-  function setParty(n) {
-    state.trip.partySize = Math.max(1, n || 1);
-    $("ed-party").value = state.trip.partySize;
-    updateResult();
+    $("ed-members-result").innerHTML = r.members
+      .map(
+        (p) => `<div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+        <span class="text-sm font-semibold text-slate-700">${escapeHtml(p.name)}</span>
+        <span class="text-sm"><b class="text-slate-800">${won(p.total)}</b>${p.unpaid > 0 ? ` <span class="text-[11px] text-rose-500">미지급 ${won(p.unpaid)}</span>` : ` <span class="text-[11px] text-emerald-600">완납</span>`}</span>
+      </div>`
+      )
+      .join("");
   }
 
   async function saveTrip(silent) {
@@ -532,9 +622,7 @@
     $("ed-bank").addEventListener("input", (e) => (state.trip.bankName = e.target.value));
     $("ed-holder").addEventListener("input", (e) => (state.trip.accountHolder = e.target.value));
     $("ed-account").addEventListener("input", (e) => (state.trip.accountNumber = e.target.value));
-    $("ed-party").addEventListener("input", (e) => setParty(Number(e.target.value)));
-    $("ed-ppl-minus").addEventListener("click", () => setParty(state.trip.partySize - 1));
-    $("ed-ppl-plus").addEventListener("click", () => setParty(state.trip.partySize + 1));
+    $("ed-add-member").addEventListener("click", addMember);
     $("ed-country").addEventListener("change", (e) => {
       state.trip.country = e.target.value;
       const cur = catalogCurrency(e.target.value);
