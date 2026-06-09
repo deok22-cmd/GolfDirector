@@ -123,6 +123,7 @@ GolfDirector/
 - **사용자 데이터**: `/home/bitnami/golfChongmu/backend/data/{users,trips}.json` (서버에만, git 제외).
 - **코드 갱신(재배포)**: 로컬에서 파일 수정 → `scp -i <키> <파일> bitnami@52.78.54.161:/home/bitnami/golfChongmu/<경로>` → 프론트(html/js)는 즉시 반영, 백엔드(.js) 바뀌면 `ssh ... 'pm2 restart golfChongmu'`. (번들 배포는 `tar`로 묶어 scp 후 서버에서 풀기)
 - **주의**: 같은 Apache가 `1688`·`flight`·`discount` 등 타 앱도 서빙 → 프록시 conf는 `golfChongmu` 전용으로만, apache 재시작 전 `apachectl configtest` 필수.
+- 🚨 **데이터 안전 (절대 규칙)**: `/home/bitnami/golfChongmu/backend/data/{users,trips}.json` 은 **실사용자 데이터**다. **절대 `rm` 등으로 지우지 말 것.** (과거 테스트 정리하며 통째로 지워 사용자 데이터 유실시킨 사고 있었음.) 테스트가 필요하면 **로컬에서** 하거나, 만든 테스트 계정만 **이메일로 콕 집어** node 필터로 제거. 매시간 자동 백업: `/home/bitnami/golfChongmu/backups/data-*.tgz`(스크립트 `backup-data.sh`, crontab `0 * * * *`). **복구**: `tar xzf backups/data-<ts>.tgz -C backend/data/`.
 
 ## 9. 작업 컨벤션
 - 주석/UI 텍스트는 한국어. 코드 식별자는 영어.
