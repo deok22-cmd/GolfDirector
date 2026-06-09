@@ -90,6 +90,7 @@ GolfDirector/
 - ✅ **v2 배포 (완료) — 라이브**: AWS Lightsail(Bitnami)에 Node+pm2+Apache 리버스프록시로 배포. **http://www.deoklabs.xyz/golfChongmu/** 에서 동작. 서브경로 대응(BASE_PATH). 상세는 12번.
 - ✅ **HTTPS (완료)**: bncert로 Let's Encrypt 적용 + http→https/bare→www 리다이렉트. (상세 12번)
 - ✅ **관리자 페이지 (완료)**: `ADMIN_EMAILS`(=deok22@gmail.com) 계정만 접근. `/golfChongmu/admin.html`(통계·회원목록/삭제·전체여행 조회/삭제·공지). 백엔드 `/api/admin/*`(auth.js `adminMiddleware`, `isAdmin`), 공개 `/api/notice`→앱 상단 배너. 로그인 응답·`/api/auth/me`에 `user.isAdmin` 포함 → 메인 상단 🔧관리자 버튼. **deok22@gmail.com으로 가입/로그인해야 관리자 권한.**
+- 💡 **확장 비전 검토중 (v3) — "총무 N빵 포털"**: 골프뿐 아니라 모든 모임 총무 N빵 도구로 확장(회식·여행·동호회·경조사…). **한 엔진 위 테마 버티컬**(trip에 `category` 추가 + 프리셋), 포털 랜딩, 공유 바이럴+SEO로 트래픽→광고. 골프는 첫 간판 버티컬. 상세 = `기획안.md` 10장. (아직 미착수 — 사용자 승인 후)
 - ⬜ **Phase 3 (다음)**: ① AdSense 신청 ② JSON DB→실DB ③ 비번재설정/구글로그인 ④ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
 
 ## 8. 다음에 할 일 (Next)
