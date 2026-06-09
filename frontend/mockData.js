@@ -46,6 +46,7 @@ const CURRENCY_SYMBOL = {
 // 국가 카탈로그 — 탭에 항상 노출되는 주요 골프 여행국 + 기본 현지통화.
 // 데이터(MOCK_TRIPS)에만 있는 국가는 app.js 에서 이 목록 뒤에 자동 합산됩니다.
 const COUNTRY_CATALOG = [
+  { name: "대한민국", currency: "KRW" },
   { name: "태국", currency: "THB" },
   { name: "일본", currency: "JPY" },
   { name: "베트남", currency: "VND" },

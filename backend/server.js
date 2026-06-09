@@ -78,6 +78,32 @@ app.delete(P("/api/trips/:id"), authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- 공유 결과 페이지 ----
+// 공유 링크 생성/갱신 (로그인 필요)
+app.post(P("/api/trips/:id/share"), authMiddleware, (req, res) => {
+  const t = db.setShare(req.userId, req.params.id, req.body?.fxSnapshot || {});
+  if (!t) return res.status(404).json({ error: "여행을 찾을 수 없습니다." });
+  res.json({ shareId: t.shareId });
+});
+// 공개 조회 (로그인 불필요) — 일행이 링크로 상세 조회
+app.get(P("/api/share/:shareId"), (req, res) => {
+  const t = db.findTripByShareId(req.params.shareId);
+  if (!t) return res.status(404).json({ error: "공유된 내역을 찾을 수 없습니다." });
+  const owner = db.findUserById(t.userId);
+  res.json({
+    trip: {
+      title: t.title,
+      country: t.country,
+      currency: t.currency,
+      partySize: t.partySize,
+      rows: t.rows,
+      fxSnapshot: t.fxSnapshot || {},
+      owner: owner ? owner.email.split("@")[0] : "총무",
+      updatedAt: t.updatedAt,
+    },
+  });
+});
+
 // ---- (향후/유료) AI 견적 정제 — 로그인 필요 ----
 app.post(P("/api/parse"), authMiddleware, async (req, res) => {
   try {

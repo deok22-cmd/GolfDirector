@@ -53,8 +53,9 @@ GolfDirector/
 
 ## 5. 데이터 모델 (v2 — 서버 저장)
 - **user**: `{ id, email, passwordHash(bcrypt), createdAt }` — 비밀번호 평문 저장 안 함.
-- **trip**: `{ id, userId, title, country(한글), currency(주통화코드), partySize, fxMode("auto"|"manual"), manualFx{cur:rate}, rows[], createdAt, updatedAt }`
-- **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"|"team") }`
+- **trip**: `{ id, userId, title, country(한글), currency(주통화코드), partySize, fxMode, manualFx{cur:rate}, rows[], shareId?, fxSnapshot?, createdAt, updatedAt }`
+- **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"|"team"), paid(bool=지급완료) }`
+- **공유 결과페이지**: `POST /api/trips/:id/share`(로그인) → `shareId`+`fxSnapshot`(공유시점 환율) 저장. `GET /api/share/:shareId`(공개, 무인증) → `share.html?id=`가 읽기전용 렌더(총무명=이메일앞부분, 지급상태, 1인당/전체/지급완료/미지급). 카톡엔 요약 대신 이 URL을 보냄 → 클릭 유입(광고 페이지). 결과화면은 전체/지급완료/미지급 3분할 표시.
 - **계산식**: `1인당 = Σ(person항목 원화) + Σ(team항목 원화)/인원`, `합계 = 1인당 × 인원`. 원화환산은 `rateOf = manualFx[cur] ?? liveFx[cur] ?? FX_RATES[cur]`.
 - **환율**: 프론트가 `open.er-api.com/v6/latest/USD`(키 불필요)에서 실시간 → `1c=(KRW/USD)/(c/USD)`. 사용자가 칸을 고치면 `manualFx`에 저장되고 trip에 영속. ※ mockData의 FX_RATES는 오프라인 폴백.
 - **국가→통화**: `COUNTRY_CATALOG`(name→currency)로 국가 선택 시 주통화 자동. 행 통화는 KRW·주통화 우선 노출.

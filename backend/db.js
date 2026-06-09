@@ -35,6 +35,7 @@ function sanitizeTrip(d) {
           amount: r.amount === null || r.amount === "" ? null : Number(r.amount),
           currency: String(r.currency || "KRW"),
           scope: r.scope === "team" ? "team" : "person",
+          paid: r.paid === true, // 지급완료 여부 (기본 미지급)
         }))
       : [],
   };
@@ -98,5 +99,21 @@ export const db = {
     const removed = next.length !== trips.length;
     if (removed) writeAll("trips", next);
     return removed;
+  },
+
+  // ---- 공유(결과 페이지) ----
+  findTripByShareId(shareId) {
+    return readAll("trips").find((t) => t.shareId === shareId) || null;
+  },
+  // 공유 링크 생성/갱신: shareId(없으면 발급) + fxSnapshot(공유 시점 환율) 저장
+  setShare(userId, id, fxSnapshot) {
+    const trips = readAll("trips");
+    const idx = trips.findIndex((t) => t.id === id && t.userId === userId);
+    if (idx < 0) return null;
+    if (!trips[idx].shareId) trips[idx].shareId = randomUUID().replace(/-/g, "").slice(0, 12);
+    trips[idx].fxSnapshot = fxSnapshot && typeof fxSnapshot === "object" ? fxSnapshot : {};
+    trips[idx].updatedAt = new Date().toISOString();
+    writeAll("trips", trips);
+    return trips[idx];
   },
 };

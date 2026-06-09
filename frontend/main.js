@@ -30,12 +30,23 @@
   }
   function computeTrip(trip) {
     const party = Math.max(1, Number(trip.partySize) || 1);
-    let perPerson = 0;
+    let pp = 0, ppPaid = 0, ppUnpaid = 0;
     for (const r of trip.rows || []) {
       const krw = r.amount == null ? 0 : r.amount * rateOf(trip, r.currency);
-      perPerson += r.scope === "team" ? krw / party : krw;
+      const c = r.scope === "team" ? krw / party : krw;
+      pp += c;
+      if (r.paid) ppPaid += c;
+      else ppUnpaid += c;
     }
-    return { perPerson, group: perPerson * party, hasMissing: (trip.rows || []).some((r) => r.amount == null && (r.name || "").trim()) };
+    return {
+      perPerson: pp,
+      group: pp * party,
+      paidGroup: ppPaid * party,
+      unpaidGroup: ppUnpaid * party,
+      paidPerPerson: ppPaid,
+      unpaidPerPerson: ppUnpaid,
+      hasMissing: (trip.rows || []).some((r) => r.amount == null && (r.name || "").trim()),
+    };
   }
   // 통화 선택 옵션: KRW · 주통화 · 나머지 순
   function currencyOptions(selected, main) {
@@ -196,7 +207,10 @@
       <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
         <input data-i="${i}" data-f="name" type="text" value="${escapeAttr(r.name)}" placeholder="항목명"
           class="row-in border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-        <button data-del="${i}" class="text-slate-300 hover:text-rose-500 text-lg px-1">✕</button>
+        <div class="flex items-center gap-1">
+          <button data-paid="${i}" class="text-[11px] font-bold px-2 py-1.5 rounded-lg whitespace-nowrap ${r.paid ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}">${r.paid ? "지급완료" : "미지급"}</button>
+          <button data-del="${i}" class="text-slate-300 hover:text-rose-500 text-lg px-1">✕</button>
+        </div>
         <div class="col-span-2 grid grid-cols-[1fr_84px_92px] gap-2">
           <input data-i="${i}" data-f="amount" type="text" inputmode="numeric" value="${r.amount == null ? "" : r.amount.toLocaleString()}" placeholder="금액"
             class="row-in text-right border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
@@ -225,6 +239,14 @@
     wrap.querySelectorAll("[data-del]").forEach((b) =>
       b.addEventListener("click", () => {
         state.trip.rows.splice(Number(b.dataset.del), 1);
+        renderRows();
+        recompute();
+      })
+    );
+    wrap.querySelectorAll("[data-paid]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const r = state.trip.rows[Number(b.dataset.paid)];
+        r.paid = !r.paid;
         renderRows();
         recompute();
       })
@@ -298,9 +320,11 @@
     updateResult();
   }
   function updateResult() {
-    const { perPerson, group } = computeTrip(state.trip);
-    $("ed-per-person").textContent = won(perPerson);
-    $("ed-group").textContent = won(group);
+    const r = computeTrip(state.trip);
+    $("ed-per-person").textContent = won(r.perPerson);
+    $("ed-group").textContent = won(r.group);
+    $("ed-paid").textContent = won(r.paidGroup);
+    $("ed-unpaid").textContent = won(r.unpaidGroup);
     $("ed-ppl-label").textContent = state.trip.partySize;
   }
 
@@ -342,30 +366,54 @@
     await loadList();
   }
 
-  function kakaoText() {
-    const t = state.trip;
-    const { perPerson, group } = computeTrip(t);
-    const L = [];
-    L.push(`⛳ ${t.title || "골프 여행"} 정산 안내`);
-    L.push(`■ 1인당: 약 ${won(perPerson)}`);
-    L.push(`■ 일행 ${t.partySize}명 합계: 약 ${won(group)}`);
-    L.push("");
-    L.push("[항목]");
-    for (const r of t.rows) {
-      if (!(r.name || "").trim()) continue;
-      const tag = r.scope === "team" ? `${t.partySize}명` : "1인";
-      if (r.amount == null) L.push(`- ${r.name}(${tag}): 현지 확인`);
-      else if (r.currency === "KRW") L.push(`- ${r.name}(${tag}): ${won(r.amount)}`);
-      else L.push(`- ${r.name}(${tag}): ${sym(r.currency)}${r.amount.toLocaleString()} (≈${won(r.amount * rateOf(t, r.currency))})`);
+  // 클립보드 복사 (http 환경 대비 execCommand 폴백)
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {}
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
     }
-    const cur = usedCurrencies();
-    if (cur.length) {
-      L.push("");
-      L.push("※ 환율: " + cur.map((c) => `1${sym(c)}≈${Math.round((rateOf(t, c)) * 100) / 100}원`).join(", "));
+  }
+
+  // 결과 공유: 저장 → 공유링크 생성 → 카톡 메시지(링크 포함) 팝업
+  async function shareTrip() {
+    const ok = await saveTrip(true);
+    if (ok !== true) return;
+    const fxSnapshot = {};
+    for (const c of usedCurrencies()) fxSnapshot[c] = rateOf(state.trip, c);
+    let shareId;
+    try {
+      shareId = (await api("POST", "/api/trips/" + state.trip.id + "/share", { fxSnapshot })).shareId;
+    } catch (e) {
+      if (e.status === 401) return logout();
+      return toast("공유 링크 생성 실패: " + e.message);
     }
-    L.push("");
-    L.push("➡ 각자 1인당 금액을 총무에게 보내주세요!");
-    return L.join("\n");
+    const url = API_BASE + "/share.html?id=" + shareId;
+    const owner = (session.email || "").split("@")[0];
+    const c = computeTrip(state.trip);
+    const msg =
+      `⛳ [${owner} 총무] '${state.trip.title || "골프 여행"}' 골프 비용 정산\n` +
+      `예상 1인당 ${won(c.perPerson)}` +
+      (c.unpaidGroup > 0 ? ` · 미지급 ${won(c.unpaidGroup)} 남음` : ``) +
+      `\n👉 상세 결제내역 보기: ${url}`;
+    $("share-text").value = msg;
+    $("share-pop").classList.remove("hidden");
+    if (copyText(msg)) toast("복사됐어요! 단톡방에 붙여넣으세요");
   }
 
   // ---------------- 실시간 환율 ----------------
@@ -431,11 +479,11 @@
       state.lastFxKey = "";
       recompute();
     });
-    $("ed-kakao").addEventListener("click", () => {
-      navigator.clipboard?.writeText(kakaoText()).then(
-        () => toast("카톡 정산 문구 복사 완료!"),
-        () => toast("복사 실패 — 권한 확인")
-      );
+    $("ed-kakao").addEventListener("click", shareTrip);
+    $("share-close").addEventListener("click", () => $("share-pop").classList.add("hidden"));
+    $("share-copy").addEventListener("click", () => {
+      if (copyText($("share-text").value)) toast("복사됐어요!");
+      else { $("share-text").focus(); $("share-text").select(); toast("길게 눌러 복사하세요"); }
     });
 
     setAuthMode("login");
