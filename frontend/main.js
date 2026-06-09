@@ -171,6 +171,9 @@
       currency: catalogCurrency(country) || "KRW",
       partySize: 4,
       manualFx: {},
+      bankName: "",
+      accountNumber: "",
+      accountHolder: "",
       rows: [
         { name: "패키지(항공+숙박+그린피)", amount: null, currency: "KRW", scope: "person" },
         { name: "캐디팁", amount: null, currency: catalogCurrency(country) || "KRW", scope: "person" },
@@ -184,6 +187,9 @@
     state.lastFxKey = "";
     $("ed-title").value = state.trip.title || "";
     $("ed-party").value = state.trip.partySize || 1;
+    $("ed-bank").value = state.trip.bankName || "";
+    $("ed-holder").value = state.trip.accountHolder || "";
+    $("ed-account").value = state.trip.accountNumber || "";
     $("ed-delete").classList.toggle("hidden", !state.trip.id);
     fillCountrySelect();
     renderRows();
@@ -321,10 +327,12 @@
   }
   function updateResult() {
     const r = computeTrip(state.trip);
-    $("ed-per-person").textContent = won(r.perPerson);
-    $("ed-group").textContent = won(r.group);
-    $("ed-paid").textContent = won(r.paidGroup);
-    $("ed-unpaid").textContent = won(r.unpaidGroup);
+    $("ed-pp-all").textContent = won(r.perPerson);
+    $("ed-pp-paid").textContent = won(r.paidPerPerson);
+    $("ed-pp-unpaid").textContent = won(r.unpaidPerPerson);
+    $("ed-g-all").textContent = won(r.group);
+    $("ed-g-paid").textContent = won(r.paidGroup);
+    $("ed-g-unpaid").textContent = won(r.unpaidGroup);
     $("ed-ppl-label").textContent = state.trip.partySize;
   }
 
@@ -462,6 +470,9 @@
     $("ed-save").addEventListener("click", () => saveTrip(false));
 
     $("ed-title").addEventListener("input", (e) => (state.trip.title = e.target.value));
+    $("ed-bank").addEventListener("input", (e) => (state.trip.bankName = e.target.value));
+    $("ed-holder").addEventListener("input", (e) => (state.trip.accountHolder = e.target.value));
+    $("ed-account").addEventListener("input", (e) => (state.trip.accountNumber = e.target.value));
     $("ed-party").addEventListener("input", (e) => setParty(Number(e.target.value)));
     $("ed-ppl-minus").addEventListener("click", () => setParty(state.trip.partySize - 1));
     $("ed-ppl-plus").addEventListener("click", () => setParty(state.trip.partySize + 1));

@@ -29,6 +29,9 @@ function sanitizeTrip(d) {
     partySize: Math.max(1, Number(d.partySize) || 1),
     fxMode: d.fxMode === "manual" ? "manual" : "auto",
     manualFx: d.manualFx && typeof d.manualFx === "object" ? d.manualFx : {},
+    bankName: String(d.bankName || "").slice(0, 40),
+    accountNumber: String(d.accountNumber || "").slice(0, 50),
+    accountHolder: String(d.accountHolder || "").slice(0, 40),
     rows: Array.isArray(d.rows)
       ? d.rows.slice(0, 100).map((r) => ({
           name: String(r.name || "").slice(0, 80),

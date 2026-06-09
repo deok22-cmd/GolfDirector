@@ -53,9 +53,11 @@ GolfDirector/
 
 ## 5. 데이터 모델 (v2 — 서버 저장)
 - **user**: `{ id, email, passwordHash(bcrypt), createdAt }` — 비밀번호 평문 저장 안 함.
-- **trip**: `{ id, userId, title, country(한글), currency(주통화코드), partySize, fxMode, manualFx{cur:rate}, rows[], shareId?, fxSnapshot?, createdAt, updatedAt }`
+- **trip**: `{ id, userId, title, country(한글), currency, partySize, fxMode, manualFx{}, bankName, accountNumber, accountHolder, rows[], shareId?, fxSnapshot?, createdAt, updatedAt }`
 - **row(비용항목)**: `{ name, amount(number|null), currency, scope("person"|"team"), paid(bool=지급완료) }`
-- **공유 결과페이지**: `POST /api/trips/:id/share`(로그인) → `shareId`+`fxSnapshot`(공유시점 환율) 저장. `GET /api/share/:shareId`(공개, 무인증) → `share.html?id=`가 읽기전용 렌더(총무명=이메일앞부분, 지급상태, 1인당/전체/지급완료/미지급). 카톡엔 요약 대신 이 URL을 보냄 → 클릭 유입(광고 페이지). 결과화면은 전체/지급완료/미지급 3분할 표시.
+- **6값 표시**(에디터 하단 + 공유페이지): `1인당`·`전체` × `전체/지급완료/미지급` (computeTrip이 perPerson·paidPerPerson·unpaidPerPerson·group·paidGroup·unpaidGroup 반환).
+- **총무 계좌**: bankName/accountNumber/accountHolder를 여행마다 입력 → 공유페이지에서 "내 미지급(1인당)" + **[계좌·금액 복사]**(`은행 계좌 (예금주) ₩미지급액`) → 토스 등 붙여넣기 송금.
+- **공유 결과페이지**: `POST /api/trips/:id/share`(로그인) → `shareId`+`fxSnapshot` 저장. `GET /api/share/:shareId`(공개·무인증, 계좌 포함) → `share.html?id=` 읽기전용(총무명=이메일앞, 6값, 지급상태, 계좌복사). 카톡엔 요약 대신 이 URL → 클릭 유입(광고). http 환경이라 복사는 execCommand 폴백.
 - **계산식**: `1인당 = Σ(person항목 원화) + Σ(team항목 원화)/인원`, `합계 = 1인당 × 인원`. 원화환산은 `rateOf = manualFx[cur] ?? liveFx[cur] ?? FX_RATES[cur]`.
 - **환율**: 프론트가 `open.er-api.com/v6/latest/USD`(키 불필요)에서 실시간 → `1c=(KRW/USD)/(c/USD)`. 사용자가 칸을 고치면 `manualFx`에 저장되고 trip에 영속. ※ mockData의 FX_RATES는 오프라인 폴백.
 - **국가→통화**: `COUNTRY_CATALOG`(name→currency)로 국가 선택 시 주통화 자동. 행 통화는 KRW·주통화 우선 노출.
