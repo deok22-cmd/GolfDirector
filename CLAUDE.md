@@ -87,7 +87,8 @@ GolfDirector/
   - **구현**: 백엔드 인증(bcryptjs+JWT) + 사용자별 trip CRUD(JSON DB). 프론트 재작성(`index.html`+`main.js`): 로그인/목록/여행편집 3뷰, 모바일 우선, Enter로 다음 행, 1인/팀 N빵, 실시간/수동 환율, 카톡 정산. AdSense 자리(`#ad-slot`) 마련.
   - **검증**: 인증+CRUD curl 테스트 통과. (계산기 단독 calculator.js는 main.js로 흡수돼 삭제)
 - ✅ **v2 배포 (완료) — 라이브**: AWS Lightsail(Bitnami)에 Node+pm2+Apache 리버스프록시로 배포. **http://www.deoklabs.xyz/golfChongmu/** 에서 동작. 서브경로 대응(BASE_PATH). 상세는 12번.
-- ⬜ **Phase 3 (다음)**: ① HTTPS 적용(현재 http만; bncert/Let's Encrypt) ② AdSense 신청 ③ JSON DB→실DB ④ 비번재설정/구글로그인 ⑤ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
+- ✅ **HTTPS (완료)**: bncert로 Let's Encrypt 적용 + http→https/bare→www 리다이렉트. (상세 12번)
+- ⬜ **Phase 3 (다음)**: ① **관리자 페이지**(회원·여행 조회, 통계, 관리) ② AdSense 신청 ③ JSON DB→실DB ④ 비번재설정/구글로그인 ⑤ 유료: 견적서 AI 자동입력(/api/parse)·엑셀·개인별 지출 정산
 
 ## 8. 다음에 할 일 (Next)
 - 라이브 사용: **http://www.deoklabs.xyz/golfChongmu/** 회원가입 → 여행 만들기/항목입력/환율/카톡 (모바일 포함) 확인
@@ -112,7 +113,8 @@ GolfDirector/
 - **주의**: 익스텐션은 번들러가 없어 백엔드에서만 공식 SDK 사용(데이터 플레인). 익스텐션은 raw fetch로 백엔드만 호출(Anthropic 직접 호출 안 함 = 키 비노출).
 
 ## 12. 배포 (라이브 서버 — 중요)
-- **라이브 URL**: http://www.deoklabs.xyz/golfChongmu/  (현재 **http만** 동작, https는 미설정)
+- **라이브 URL**: **https://www.deoklabs.xyz/golfChongmu/** (🔒 HTTPS 적용 완료)
+- **HTTPS**: Bitnami `bncert-tool`로 Let's Encrypt 인증서 발급(도메인 www.deoklabs.xyz + deoklabs.xyz, 이메일 deok22@gmail.com). **http→https 강제 + bare→www 리다이렉트**(서버 전체 적용 = 1688/flight 등 모두). 자동 갱신은 bncert가 구성. 재설정 시 `sudo /opt/bitnami/bncert-tool`(대화형) — expect로 자동화한 전례 있음(/tmp/bncert.exp). 설정 백업: `httpd.conf.back.*`, `bitnami-ssl.conf.back.*`, `/home/bitnami/vhosts.bak.*`.
 - **서버**: AWS Lightsail Bitnami. IP `52.78.54.161`, user `bitnami`, SSH 키 `D:\lightsail\LAMP_deok22.pem`. (Apache 유저=daemon, Node v24, pm2 v7 설치됨. PHP도 있으나 미사용 — 이 서버 표준은 Node+pm2+Apache프록시.)
 - **앱 위치**: `/home/bitnami/golfChongmu/` (`backend/` + `frontend/`). 기존 `1688` 앱과 동일 패턴.
 - **구동**: pm2 name `golfChongmu`, **포트 3001**, env `BASE_PATH=/golfChongmu`(+JWT_SECRET) in `backend/.env`. → `pm2 restart golfChongmu`, 영속 `pm2 save`.
