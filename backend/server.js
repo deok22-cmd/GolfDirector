@@ -95,6 +95,8 @@ app.get(P("/api/share/:shareId"), (req, res) => {
       title: t.title,
       country: t.country,
       currency: t.currency,
+      startDate: t.startDate || "",
+      endDate: t.endDate || "",
       partySize: t.partySize,
       members: t.members || [],
       rows: t.rows,

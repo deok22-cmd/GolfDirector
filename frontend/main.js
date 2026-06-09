@@ -22,6 +22,9 @@
   const liveFx = {}; // 통화 → 원 (실시간)
   let fxLoaded = false;
   const state = { trip: null, lastFxKey: "" };
+  let myTrips = [];
+  let listMode = "list"; // list | calendar
+  const calState = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
   // ---------------- 유틸 ----------------
   const won = (n) => "₩" + Math.round(n || 0).toLocaleString("ko-KR");
@@ -170,26 +173,31 @@
 
   // ---------------- 목록 ----------------
   async function loadList() {
-    let trips = [];
     try {
-      trips = (await api("GET", "/api/trips")).trips || [];
+      myTrips = (await api("GET", "/api/trips")).trips || [];
     } catch (e) {
       if (e.status === 401) return logout();
       toast(e.message);
+      myTrips = [];
     }
-    renderList(trips);
+    renderList();
+    setListMode(listMode);
     showView("list");
   }
-  function renderList(trips) {
+  function dateRange(t) {
+    if (!t.startDate) return "";
+    return t.startDate + (t.endDate && t.endDate !== t.startDate ? " ~ " + t.endDate : "");
+  }
+  function renderList() {
     const wrap = $("trip-cards");
-    $("list-empty").classList.toggle("hidden", trips.length > 0);
-    wrap.innerHTML = trips
+    wrap.innerHTML = myTrips
       .map((t) => {
         const { perPerson } = computeTrip(t);
+        const dr = dateRange(t);
         return `<div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between active:bg-slate-50" data-open="${t.id}">
           <div class="min-w-0">
             <div class="font-bold text-slate-800 truncate">${escapeHtml(t.title || "제목 없음")}</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(t.country || "국가 미설정")} · ${t.partySize || 1}명 · ${(t.rows || []).length}개 항목</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${dr ? "📅 " + escapeHtml(dr) + " · " : ""}${escapeHtml(t.country || "국가 미설정")} · ${t.partySize || 1}명 · ${(t.rows || []).length}개 항목</div>
           </div>
           <div class="text-right flex-shrink-0 pl-3">
             <div class="text-emerald-700 font-extrabold">${won(perPerson)}</div>
@@ -199,7 +207,66 @@
       })
       .join("");
     wrap.querySelectorAll("[data-open]").forEach((el) =>
-      el.addEventListener("click", () => openEditor(trips.find((t) => t.id === el.dataset.open)))
+      el.addEventListener("click", () => openEditor(myTrips.find((t) => t.id === el.dataset.open)))
+    );
+  }
+
+  // ---------------- 리스트 / 달력 보기 ----------------
+  function setListMode(mode) {
+    listMode = mode;
+    const calOn = mode === "calendar";
+    $("vm-list").className = "px-3 py-1.5 text-xs font-bold rounded-lg " + (calOn ? "text-slate-500" : "bg-white shadow-sm");
+    $("vm-cal").className = "px-3 py-1.5 text-xs font-bold rounded-lg " + (calOn ? "bg-white shadow-sm" : "text-slate-500");
+    $("trip-cards").classList.toggle("hidden", calOn);
+    $("list-empty").classList.toggle("hidden", calOn || myTrips.length > 0);
+    $("cal-view").classList.toggle("hidden", !calOn);
+    if (calOn) { jumpCalToTrips(); renderCalendar(); }
+  }
+  function jumpCalToTrips() {
+    const dated = myTrips.filter((t) => t.startDate).map((t) => t.startDate).sort();
+    if (dated.length) { const x = dated[dated.length - 1]; calState.y = Number(x.slice(0, 4)); calState.m = Number(x.slice(5, 7)) - 1; }
+  }
+  function renderCalendar() {
+    const wrap = $("cal-view");
+    const y = calState.y, m = calState.m;
+    const pad = (n) => String(n).padStart(2, "0");
+    const dateStr = (d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+    const firstDow = new Date(y, m, 1).getDay();
+    const dim = new Date(y, m + 1, 0).getDate();
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const dow = ["일", "월", "화", "수", "목", "금", "토"];
+    const cells = [];
+    for (let i = 0; i < firstDow; i++) cells.push(0);
+    for (let d = 1; d <= dim; d++) cells.push(d);
+    while (cells.length % 7) cells.push(0);
+    let h = `<div class="flex items-center justify-between mb-2">
+      <button id="cal-prev" class="px-3 py-1 text-slate-500 text-lg">‹</button>
+      <div class="font-extrabold">${y}년 ${m + 1}월</div>
+      <button id="cal-next" class="px-3 py-1 text-slate-500 text-lg">›</button></div>`;
+    h += `<div class="grid grid-cols-7 text-center text-[10px] font-bold mb-1">${dow.map((x, i) => `<div class="${i === 0 ? "text-rose-400" : i === 6 ? "text-blue-400" : "text-slate-400"}">${x}</div>`).join("")}</div>`;
+    h += `<div class="grid grid-cols-7 gap-1">`;
+    for (const c of cells) {
+      if (!c) { h += `<div class="min-h-[54px]"></div>`; continue; }
+      const ds = dateStr(c);
+      const dayTrips = myTrips.filter((t) => t.startDate && ds >= t.startDate && ds <= (t.endDate || t.startDate));
+      const isToday = ds === todayStr;
+      h += `<div class="min-h-[54px] rounded-lg border ${isToday ? "border-emerald-400 bg-emerald-50" : "border-slate-100 bg-white"} p-1 overflow-hidden">
+        <div class="text-[10px] ${isToday ? "text-emerald-700 font-bold" : "text-slate-400"}">${c}</div>
+        ${dayTrips.slice(0, 2).map((t) => `<div data-open="${t.id}" class="cal-chip text-[9px] leading-tight truncate bg-emerald-100 text-emerald-800 rounded px-1 mt-0.5">${escapeHtml(t.title || "여행")}</div>`).join("")}
+        ${dayTrips.length > 2 ? `<div class="text-[9px] text-slate-400 mt-0.5">+${dayTrips.length - 2}</div>` : ""}
+      </div>`;
+    }
+    h += `</div>`;
+    const undated = myTrips.filter((t) => !t.startDate);
+    if (undated.length) {
+      h += `<div class="mt-3"><div class="text-[11px] font-bold text-slate-400 mb-1">📌 날짜 미정</div>${undated.map((t) => `<div data-open="${t.id}" class="cal-chip bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold mb-1">${escapeHtml(t.title || "여행")}</div>`).join("")}</div>`;
+    }
+    wrap.innerHTML = h;
+    $("cal-prev").addEventListener("click", () => { calState.m--; if (calState.m < 0) { calState.m = 11; calState.y--; } renderCalendar(); });
+    $("cal-next").addEventListener("click", () => { calState.m++; if (calState.m > 11) { calState.m = 0; calState.y++; } renderCalendar(); });
+    wrap.querySelectorAll(".cal-chip").forEach((el) =>
+      el.addEventListener("click", () => openEditor(myTrips.find((t) => t.id === el.dataset.open)))
     );
   }
 
@@ -210,6 +277,8 @@
       title: "",
       country,
       currency: catalogCurrency(country) || "KRW",
+      startDate: "",
+      endDate: "",
       members: ["", "", "", ""],
       partySize: 4,
       manualFx: {},
@@ -233,6 +302,8 @@
     state.trip.partySize = state.trip.members.length;
     state.lastFxKey = "";
     $("ed-title").value = state.trip.title || "";
+    $("ed-start").value = state.trip.startDate || "";
+    $("ed-end").value = state.trip.endDate || "";
     $("ed-bank").value = state.trip.bankName || "";
     $("ed-holder").value = state.trip.accountHolder || "";
     $("ed-account").value = state.trip.accountNumber || "";
@@ -619,6 +690,10 @@
     $("ed-save").addEventListener("click", () => saveTrip(false));
 
     $("ed-title").addEventListener("input", (e) => (state.trip.title = e.target.value));
+    $("ed-start").addEventListener("change", (e) => (state.trip.startDate = e.target.value));
+    $("ed-end").addEventListener("change", (e) => (state.trip.endDate = e.target.value));
+    $("vm-list").addEventListener("click", () => setListMode("list"));
+    $("vm-cal").addEventListener("click", () => setListMode("calendar"));
     $("ed-bank").addEventListener("input", (e) => (state.trip.bankName = e.target.value));
     $("ed-holder").addEventListener("input", (e) => (state.trip.accountHolder = e.target.value));
     $("ed-account").addEventListener("input", (e) => (state.trip.accountNumber = e.target.value));

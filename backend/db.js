@@ -30,6 +30,8 @@ function sanitizeTrip(d) {
     title: String(d.title || "새 여행").slice(0, 100),
     country: String(d.country || ""),
     currency: String(d.currency || "KRW"),
+    startDate: typeof d.startDate === "string" ? d.startDate.slice(0, 10) : "",
+    endDate: typeof d.endDate === "string" ? d.endDate.slice(0, 10) : "",
     members,
     partySize,
     fxMode: d.fxMode === "manual" ? "manual" : "auto",
