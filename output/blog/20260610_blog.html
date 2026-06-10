@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해외 골프 여행 총무의 정산 고민 끝 — 환율·N빵 자동 '골프총무' 완벽 가이드</title>
+<style>
+  body { margin: 0; padding: 16px; background: #fff; font-family: 'Apple SD Gothic Neo', sans-serif; font-size: 16px; line-height: 1.9; color: #222; max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 1.6em; font-weight: 800; border-bottom: 5px solid #2d6a4f; padding-bottom: 12px; color: #1b4332; text-align: center; }
+  h2 { font-size: 1.2em; font-weight: 700; background: #d8f3dc; padding: 12px 15px; border-left: 6px solid #2d6a4f; margin-top: 50px; color: #1b4332; }
+  h3 { font-size: 1.05em; font-weight: 700; color: #2d6a4f; margin-top: 24px; }
+  .intro-box { background: #f0faf4; border: 2px solid #b7e4c7; padding: 25px; border-radius: 10px; margin: 30px 0; }
+  .info-table { width: 100%; margin: 30px 0; border-collapse: collapse; }
+  .info-table th { background: #2d6a4f; color: #fff; padding: 10px 14px; font-size: 0.95em; }
+  .info-table td { padding: 10px 14px; border: 1px solid #ddd; font-size: 0.93em; }
+  .num-right { text-align: right; }
+  .step-box { border-left: 4px solid #2d6a4f; padding: 15px 20px; background: #fff; border: 1px solid #eee; border-left-width: 4px; margin-bottom: 15px; }
+  .tip-box { background: #fffde7; border: 1px solid #f9a825; border-left: 4px solid #f9a825; padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+  .compare-box { background: #f0faf4; border: 1px solid #b7e4c7; padding: 18px 22px; margin: 20px 0; border-radius: 8px; }
+  .cta-box { background: #1b4332; color: #fff; padding: 28px 24px; margin: 40px 0; border-radius: 12px; text-align: center; }
+  .cta-box a { display: inline-block; margin-top: 16px; background: #40916c; color: #fff; text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 8px; font-size: 1.05em; }
+  .cta-url { color: #b7e4c7; font-size: 0.85em; margin-top: 12px; }
+  .recommend-area { background: #f8f9fa; border: 1px solid #eee; padding: 20px; margin: 40px 0; border-radius: 10px; }
+  .tags .tag { display: inline-block; background: #f0f0f0; padding: 3px 10px; border-radius: 5px; margin: 3px; font-size: 0.85em; color: #666; border: 1px solid #ddd; }
+  .img-area { margin: 30px 0; }
+  .img-placeholder { background: #f5f5f5; border: 2px dashed #bbb; border-radius: 8px; padding: 20px; }
+  .ph-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; color: #555; }
+  .ph-file { font-size: 0.82em; color: #888; font-family: monospace; }
+  .capture-ph { background: #eef6f1; border: 2px dashed #95d5b2; border-radius: 8px; padding: 28px 20px; text-align: center; color: #40916c; font-weight: 700; }
+  .prompt-text { font-size: 0.85em; color: #444; background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 4px; white-space: pre-wrap; line-height: 1.6; }
+  .img-caption { text-align: center; font-size: 0.88em; color: #777; margin-top: 8px; font-style: italic; }
+  .copy-btn { margin-top: 10px; background: #2d6a4f; color: #fff; border: none; border-radius: 4px; padding: 7px 16px; cursor: pointer; font-size: 0.88em; }
+</style>
+</head>
+<body>
+
+<h1>해외 골프 여행 총무의 정산 고민 끝 —<br>환율·N빵 자동 '골프총무' 완벽 가이드</h1>
+
+<div class="intro-box">
+태국·일본·베트남으로 골프 여행을 다녀온 뒤, <strong>정산은 늘 총무의 몫</strong>입니다.<br><br>
+바트로 긁은 그린피, 현금으로 낸 카트비, 한 명이 결제한 숙소비… 그날그날 다른 <strong>환율</strong>을 검색해 원화로 바꾸고, "이건 다 같이, 저건 너만"을 구분해 더하고 나누다 보면 어느새 한 시간이 훌쩍.<br><br>
+이 글에서는 <strong>여행지 통화로 입력만 하면 원화 1인당 금액이 자동으로 나오는</strong> 무료 도구 '골프총무'를 소개합니다. 환율 자동 환산부터 N빵 분배, 카톡 공유, 입금 확인까지 — 총무의 손계산을 사실상 0으로 만들어 줍니다.
+</div>
+
+<div class="img-area">
+  <div class="img-placeholder">
+    <div class="ph-head">
+      <span>📷 AI 이미지 생성 영역</span>
+      <span class="ph-file">images/20260610/golf_hero.png</span>
+    </div>
+    <pre class="prompt-text" id="prompt-hero">A beautiful tropical golf course in Thailand at golden hour, lush green fairway lined with palm trees, four golfers walking with golf bags toward the green, distant mountains and dramatic sky, pristine manicured grass, warm sunlight, photorealistic, ultra high detail, vibrant summer colors, 16:9 aspect ratio</pre>
+    <button class="copy-btn" onclick="copyPrompt('prompt-hero')">📋 프롬프트 복사하기</button>
+  </div>
+  <div class="img-caption">태국 골프 여행 — 즐거운 라운딩 뒤엔 정산이 남는다 / AI 제작 이미지</div>
+</div>
+
+<h2>① 해외 골프 총무, 왜 정산이 고생일까</h2>
+
+해외 골프 여행의 정산이 국내 모임보다 유독 까다로운 이유는 세 가지입니다.<br><br>
+
+첫째, <strong>통화가 섞입니다.</strong> 그린피·카트비·캐디피는 현지 통화로, 항공권은 원화로 결제되니 단순히 더할 수가 없습니다. 둘째, <strong>환율이 매번 다릅니다.</strong> 카드 전표 환율과 검색 환율이 다르고, 여행 기간 중에도 시세가 움직입니다. 셋째, <strong>비용 성격이 제각각입니다.</strong> 숙소·렌터카처럼 다 같이 나눌 비용이 있고, 그린피처럼 각자 내는 비용이 있으며, 누군가만 친 추가 라운드도 있습니다.<br><br>
+
+이 세 가지가 겹치면 엑셀로도 만만치 않습니다. 게다가 정산 결과를 카톡에 올리면 "나 얼마 보내면 돼?", "계좌 다시 알려줘"가 끝없이 이어지죠. <strong>골프총무는 바로 이 세 가지 문제를 자동으로 해결</strong>하기 위해 만들어졌습니다.
+
+<h2>② 골프총무란? 한눈에 보기</h2>
+
+<strong>골프총무</strong>는 4인 내외 해외 골프 여행의 <strong>총무(모임 리더)</strong>를 위한 무료 정산 도구입니다. 설치할 앱도, 어려운 사용법도 없습니다. 브라우저에서 주소만 열고 가입하면 끝. 모바일에 최적화되어 스마트폰에서 바로 쓸 수 있습니다.<br><br>
+
+<div class="compare-box">
+<strong>🆚 그냥 계산기와 뭐가 다를까?</strong><br><br>
+계산기는 <strong>환율</strong>을 모르고, <strong>"이 비용은 4명이 N빵, 저 비용은 너만"</strong>을 구분하지 못합니다. 골프총무는 항목마다 <strong>1인 / 팀(N빵) / 특정인</strong>을 토글 한 번으로 정해두면, 팀 비용은 인원수로 자동 분배하고 특정인 비용은 그 사람에게만 더합니다. 여기에 실시간 환율까지 자동 — 그래서 "계산기보다 쉽다"가 핵심입니다.
+</div>
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ①] 골프총무 첫 화면 (로그인 / 서비스 소개)<br>
+    <span class="ph-file">제안 파일명: images/20260610/01-login.png · 모바일 화면 권장</span>
+  </div>
+  <div class="img-caption">앱을 열면 보이는 첫 화면</div>
+</div>
+
+<h2>③ 핵심 기능 1 — 실시간 환율 자동 환산</h2>
+
+국가를 선택하면 그 나라 통화(바트·엔·동·페소 등)가 자동으로 잡히고, <strong>최신 환율을 불러와 원화로 환산</strong>합니다. 입력하는 순간 1인당 금액과 전체 합계가 실시간으로 바뀝니다.<br><br>
+
+환율이 카드 전표와 다르다면 <strong>직접 수정</strong>할 수 있고, 수정한 값은 그 여행에 저장됩니다. 예를 들어 1바트를 41원으로 직접 맞춰두면, 모든 바트 항목이 그 기준으로 다시 계산됩니다. "그날 시세"를 반영하고 싶은 총무에게 꼭 필요한 기능입니다.
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ②] 실시간 환율 + 1인당 자동 계산 화면<br>
+    <span class="ph-file">제안 파일명: images/20260610/02-fx.png</span>
+  </div>
+  <div class="img-caption">통화를 입력하면 원화 1인당이 즉시 계산된다</div>
+</div>
+
+<h2>④ 핵심 기능 2 — 1인 · 팀(N빵) · 특정인 분배</h2>
+
+골프총무의 진짜 차별점입니다. 비용 항목마다 부담 방식을 고를 수 있습니다.<br><br>
+
+<div class="step-box">
+<strong>각자(1인)</strong> — 그린피·카트비처럼 사람마다 동일하게 내는 비용. 인원수만큼 각자에게 더해집니다.
+</div>
+<div class="step-box">
+<strong>팀(N빵)</strong> — 숙소·렌터카·회식처럼 다 같이 나누는 비용. 입력한 금액을 인원수로 자동 분배합니다.
+</div>
+<div class="step-box">
+<strong>특정인</strong> — 누군가만 친 추가 라운드, 혼자 산 기념품 등. 지정한 사람에게만 더해집니다.
+</div>
+
+항목 입력도 빠릅니다. 'Enter'로 다음 줄로 넘어가며 연속 입력할 수 있고, <strong>여러 줄을 한 번에 붙여넣어 자동 인식</strong>시키는 것도 가능합니다("그린피: 6000바트"처럼).
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ③] 비용 항목 입력 + 1인/팀(N빵) 토글<br>
+    <span class="ph-file">제안 파일명: images/20260610/03-rows.png</span>
+  </div>
+  <div class="img-caption">항목마다 부담 방식을 토글로 선택</div>
+</div>
+
+<h2>⑤ 핵심 기능 3 — 개인별 정산 & 입금 확인</h2>
+
+일행 이름을 넣어두면 <strong>사람마다 내야 할 총액</strong>이 한눈에 정리됩니다. "각자" 비용은 본인 것만, "팀" 비용은 나눈 몫만, "특정인" 비용은 해당자에게만 — 복잡한 분배가 자동으로 끝납니다.<br><br>
+
+입금이 들어오면 사람별로 <strong>'입금완료'</strong>를 체크하세요. 한 항목에 대해 전원이 입금되면 그 항목은 <strong>자동으로 지급완료</strong>로 정리됩니다. 누가 아직 안 보냈는지, 얼마가 남았는지가 명확하게 보여 "정산 독촉"이 훨씬 수월해집니다.
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ④] 개인별 정산 (사람별 금액 / 입금완료 체크)<br>
+    <span class="ph-file">제안 파일명: images/20260610/04-settlement.png</span>
+  </div>
+  <div class="img-caption">누가 얼마, 누가 입금했는지 한눈에</div>
+</div>
+
+<h2>⑥ 핵심 기능 4 — 카톡 공유 페이지</h2>
+
+'결과 링크 공유'를 누르면 <strong>읽기 전용 정산 페이지</strong> 링크가 만들어집니다. 카톡 단톡방에 붙여넣기만 하면 됩니다.<br><br>
+
+일행은 <strong>가입이나 로그인 없이</strong> 링크를 열어 자기 미지급 금액을 확인하고, <strong>'계좌·금액 복사'</strong> 버튼으로 총무 계좌와 금액을 한 번에 복사해 토스 등에 붙여넣어 바로 송금합니다. "얼마 보내?", "계좌 뭐였지?" 같은 질문이 사라집니다.
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ⑤] 카톡 공유 페이지 (일행이 보는 화면)<br>
+    <span class="ph-file">제안 파일명: images/20260610/05-share.png · 모바일 화면 권장</span>
+  </div>
+  <div class="img-caption">일행은 로그인 없이 내 금액·계좌만 확인하고 송금</div>
+</div>
+
+<h2>⑦ 실제 예시 — 태국 방콕 4인 골프</h2>
+
+말보다 숫자가 와닿습니다. 4명이 태국 방콕으로 다녀온 여행의 정산을 골프총무로 계산하면 이렇게 나옵니다.
+
+<table class="info-table">
+  <tr>
+    <th>항목</th>
+    <th>금액</th>
+    <th>부담 방식</th>
+    <th class="num-right">1인당(원)</th>
+  </tr>
+  <tr>
+    <td style="background:#f0faf4;">그린피</td>
+    <td style="background:#f0faf4;">6,000฿</td>
+    <td style="background:#f0faf4;">각자(1인)</td>
+    <td style="background:#f0faf4;" class="num-right">≈ 246,000</td>
+  </tr>
+  <tr>
+    <td style="background:#fff;">카트 · 캐디</td>
+    <td style="background:#fff;">1,300฿</td>
+    <td style="background:#fff;">각자(1인)</td>
+    <td style="background:#fff;" class="num-right">≈ 53,300</td>
+  </tr>
+  <tr>
+    <td style="background:#f0faf4;">숙소(2박)</td>
+    <td style="background:#f0faf4;">12,000฿</td>
+    <td style="background:#f0faf4;">팀 N빵</td>
+    <td style="background:#f0faf4;" class="num-right">≈ 123,000</td>
+  </tr>
+  <tr>
+    <td style="background:#fff;">렌터카 + 기사</td>
+    <td style="background:#fff;">8,000฿</td>
+    <td style="background:#fff;">팀 N빵</td>
+    <td style="background:#fff;" class="num-right">≈ 82,000</td>
+  </tr>
+  <tr>
+    <td style="background:#f0faf4;">회식</td>
+    <td style="background:#f0faf4;">5,000฿</td>
+    <td style="background:#f0faf4;">팀 N빵</td>
+    <td style="background:#f0faf4;" class="num-right">≈ 51,200</td>
+  </tr>
+  <tr>
+    <td style="background:#1b4332; color:#fff; font-weight:800;" colspan="3">👉 한 사람당 보낼 돈</td>
+    <td style="background:#1b4332; color:#fff; font-weight:800;" class="num-right">≈ 555,500원</td>
+  </tr>
+</table>
+
+<p style="font-size:0.9em; color:#666;">※ 1฿ ≈ 41원 가정. 환율은 실시간 자동 적용되며 직접 수정도 가능합니다. "각자"는 본인 것만, "팀 N빵"은 4명으로 나눠 더해집니다 — 이 모든 계산을 총무가 손으로 할 필요가 없습니다.</p>
+
+<h2>⑧ 5단계 사용법</h2>
+
+처음 써도 5분이면 충분합니다.<br><br>
+
+<div class="step-box">
+<strong>1단계 · 가입하고 '새 여행' 만들기</strong><br>
+이메일로 무료 가입 후 여행 이름·국가·기간·일행 이름을 입력합니다. 국가를 고르면 통화는 자동으로 설정됩니다.
+</div>
+<div class="step-box">
+<strong>2단계 · 비용 항목 입력</strong><br>
+'그린피 6000바트'처럼 항목과 금액을 넣고, 각자/팀(N빵)/특정인 중 부담 방식을 고릅니다. 여러 줄 붙여넣기도 지원합니다.
+</div>
+<div class="step-box">
+<strong>3단계 · 환율 확인</strong><br>
+실시간 환율로 원화 환산이 즉시 반영됩니다. 카드 전표와 다르면 환율을 직접 수정하세요.
+</div>
+<div class="step-box">
+<strong>4단계 · 개인별 정산 확인</strong><br>
+사람마다 내야 할 금액이 자동으로 정리됩니다.
+</div>
+<div class="step-box">
+<strong>5단계 · 카톡 공유 & 입금 확인</strong><br>
+공유 링크를 카톡에 보내면 일행이 각자 송금합니다. 입금되면 '입금완료'로 체크하면 끝.
+</div>
+
+<div class="img-area">
+  <div class="capture-ph">
+    📷 [캡처 ⑥] 새 여행 만들기 (국가·기간·일행 입력)<br>
+    <span class="ph-file">제안 파일명: images/20260610/06-new-trip.png</span>
+  </div>
+  <div class="img-caption">여행 정보만 넣으면 준비 끝</div>
+</div>
+
+<h2>⑨ 이런 분께 추천 & 안전한 정산 팁</h2>
+
+다음 중 하나라도 해당된다면 골프총무가 시간을 아껴줄 겁니다.<br><br>
+
+<div class="tip-box">
+✅ <strong>이런 분께 딱</strong><br>
+• 태국·일본·베트남·필리핀 등 해외 골프 여행을 자주 가는 모임의 총무<br>
+• 환율 계산이 귀찮고 매번 검색하기 번거로운 분<br>
+• "이건 다 같이, 저건 너만" 비용 구분이 헷갈리는 분<br>
+• 정산 공지 후 "얼마 보내?" 문의에 지친 분<br>
+• 지난 여행 비용을 다음 견적의 기준으로 삼고 싶은 분
+</div>
+
+<strong>정산 팁 하나</strong>: 결제할 때마다 항목을 바로바로 입력해 두면, 여행이 끝나는 순간 정산도 끝납니다. 영수증을 모았다가 한꺼번에 하려면 누락이 생기기 쉬우니, <strong>현장에서 통화 그대로 입력</strong>하는 습관을 들이는 것이 가장 편합니다. 환율은 나중에 한 번에 맞추면 되니까요.
+
+<table class="info-table">
+  <tr>
+    <th>기능</th>
+    <th>무엇을 해주나</th>
+    <th>총무가 얻는 것</th>
+  </tr>
+  <tr>
+    <td style="background:#f0faf4;">실시간 환율</td>
+    <td style="background:#f0faf4;">현지 통화 → 원화 자동 환산</td>
+    <td style="background:#f0faf4;">환율 검색·계산 불필요</td>
+  </tr>
+  <tr>
+    <td style="background:#fff;">1인/팀/특정인</td>
+    <td style="background:#fff;">항목별 부담 자동 분배</td>
+    <td style="background:#fff;">복잡한 N빵을 토글로 끝</td>
+  </tr>
+  <tr>
+    <td style="background:#f0faf4;">개인별 정산</td>
+    <td style="background:#f0faf4;">사람별 금액·입금 상태 정리</td>
+    <td style="background:#f0faf4;">독촉이 명확하고 깔끔</td>
+  </tr>
+  <tr>
+    <td style="background:#fff;">카톡 공유</td>
+    <td style="background:#fff;">로그인 없는 정산 링크</td>
+    <td style="background:#fff;">"얼마·계좌" 문의 소멸</td>
+  </tr>
+</table>
+
+<div class="cta-box">
+  <div style="font-size:1.25em; font-weight:800;">이번 여행 정산, 5분 만에 끝내보세요</div>
+  <div style="margin-top:8px; color:#d8f3dc;">가입 무료 · 설치 불필요 · 모바일 OK</div>
+  <a href="https://www.deoklabs.xyz/golfChongmu/" target="_blank" rel="noopener">⛳ 골프총무 무료로 시작하기 →</a>
+  <div class="cta-url">www.deoklabs.xyz/golfChongmu</div>
+</div>
+
+<p style="color:#444;">다음 골프 여행, 총무라서 손해 보는 기분은 그만. 입력은 여행지 통화로 편하게, 결과는 원화 1인당 금액으로 깔끔하게. <strong>골프총무</strong>가 계산을 맡을 테니, 총무님은 라운딩에만 집중하세요. 🏌️</p>
+
+<div class="recommend-area">
+  <strong>🔗 함께 보기</strong>
+  <ul>
+    <li><a href="https://www.deoklabs.xyz/golfChongmu/guide.html">골프총무 소개·사용법 자세히 보기</a></li>
+    <li><a href="https://www.deoklabs.xyz/golfChongmu/">골프총무 바로 시작하기</a></li>
+  </ul>
+</div>
+
+<div class="tags">
+  <span class="tag">#해외골프</span>
+  <span class="tag">#골프여행정산</span>
+  <span class="tag">#골프총무</span>
+  <span class="tag">#태국골프</span>
+  <span class="tag">#베트남골프</span>
+  <span class="tag">#일본골프</span>
+  <span class="tag">#N빵계산</span>
+  <span class="tag">#환율계산</span>
+  <span class="tag">#골프모임</span>
+  <span class="tag">#여행정산앱</span>
+</div>
+
+<script>
+function copyPrompt(id) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(`button[onclick="copyPrompt('${id}')"]`);
+    const originalText = btn.innerText;
+    btn.innerText = "복사 완료!";
+    btn.style.background = "#27ae60";
+    setTimeout(() => { btn.innerText = originalText; btn.style.background = "#2d6a4f"; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

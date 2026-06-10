@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#047857" />
+  <title>총무N빵 — 모든 모임 총무를 위한 N빵 정산 포털 (골프·테니스·여행·회식)</title>
+  <meta name="description" content="골프·테니스·배드민턴·산악회·해외여행·회식 등 모든 모임의 총무를 위한 무료 N빵 정산 포털. 실시간 환율 자동 환산, 항목별 1인·팀 분배, 카카오톡 공유와 입금 확인까지 한 번에. 골프총무부터 지금 무료로 시작하세요." />
+  <meta property="og:title" content="총무N빵 — 모임 총무를 위한 N빵 정산 포털" />
+  <meta property="og:description" content="환율 자동·N빵 분배·카톡 공유. 골프총무부터 무료로 시작하세요." />
+  <meta property="og:type" content="website" />
+  <!-- Google AdSense (계정: deok22@gmail.com / pub-6552756009906366) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6552756009906366" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Pretendard', 'system-ui', 'sans-serif'] } } } };
+  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    html { scroll-behavior: smooth; }
+    .hero-grad { background: radial-gradient(1200px 500px at 50% -10%, #34d399 0%, #059669 45%, #047857 100%); }
+    .card-hover { transition: transform .18s ease, box-shadow .18s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 16px 40px -12px rgba(5,150,105,.25); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+
+  <!-- ===== 헤더 ===== -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2 font-extrabold text-lg">
+        <span class="text-2xl">💰</span>
+        <span>총무<span class="text-emerald-600">N빵</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-600">
+        <a href="#services" class="hover:text-emerald-600">서비스</a>
+        <a href="#why" class="hover:text-emerald-600">왜 총무N빵?</a>
+        <a href="#golf" class="hover:text-emerald-600">골프장 정보</a>
+        <a href="#community" class="hover:text-emerald-600">커뮤니티</a>
+        <a href="#faq" class="hover:text-emerald-600">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="/golfChongmu/" class="hidden sm:inline-block text-sm font-bold text-emerald-700 px-3 py-2 rounded-lg hover:bg-emerald-50">로그인</a>
+        <a href="/golfChongmu/" class="text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl shadow-sm">무료 시작</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 히어로 ===== -->
+  <section id="top" class="hero-grad text-white">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 pt-16 pb-20 text-center">
+      <div class="inline-block bg-white/15 backdrop-blur text-emerald-50 text-xs font-bold px-3 py-1.5 rounded-full mb-5">
+        모임 총무를 위한 무료 N빵 정산 포털
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
+        모임의 총무님,<br class="sm:hidden" /> 계산은 이제<br />
+        <span class="text-yellow-300">총무N빵</span>에 맡기세요
+      </h1>
+      <p class="mt-5 text-base sm:text-lg text-emerald-50/90 max-w-2xl mx-auto leading-relaxed">
+        골프·테니스·여행·회식… 모임마다 다른 비용, 헷갈리는 N빵, 귀찮은 환율 계산까지.
+        입력만 하면 <b class="text-white">1인당 금액이 자동</b>으로 나오고,
+        카카오톡으로 정산까지 한 번에 끝납니다.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="/golfChongmu/" class="bg-white text-emerald-700 font-extrabold px-7 py-3.5 rounded-2xl shadow-lg hover:bg-emerald-50">⛳ 골프총무 무료로 시작 →</a>
+        <a href="#services" class="bg-white/15 backdrop-blur text-white font-bold px-6 py-3.5 rounded-2xl hover:bg-white/25 border border-white/30">서비스 둘러보기</a>
+      </div>
+      <div class="mt-10 grid grid-cols-3 max-w-md mx-auto gap-3 text-center">
+        <div class="bg-white/10 rounded-xl py-3"><div class="text-2xl font-extrabold">무료</div><div class="text-[11px] text-emerald-50/80 mt-0.5">가입·정산 0원</div></div>
+        <div class="bg-white/10 rounded-xl py-3"><div class="text-2xl font-extrabold">자동</div><div class="text-[11px] text-emerald-50/80 mt-0.5">환율·N빵 계산</div></div>
+        <div class="bg-white/10 rounded-xl py-3"><div class="text-2xl font-extrabold">간편</div><div class="text-[11px] text-emerald-50/80 mt-0.5">카톡 공유·송금</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 서비스 목록 ===== -->
+  <section id="services" class="max-w-6xl mx-auto px-5 sm:px-6 py-16">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl font-extrabold">모임 종류별 총무 도구</h2>
+      <p class="text-slate-500 mt-3 max-w-2xl mx-auto">
+        모임마다 정산 방식이 다릅니다. 총무N빵은 각 모임에 꼭 맞춘 전용 정산 도구를 제공합니다.
+        지금은 <b class="text-emerald-600">골프총무</b>가 출시되어 있고, 나머지도 순차적으로 열립니다.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+
+      <!-- 골프총무 (LIVE) -->
+      <a href="/golfChongmu/" class="card-hover relative bg-white rounded-2xl border-2 border-emerald-300 p-5 block">
+        <span class="absolute top-3 right-3 text-[10px] font-extrabold bg-emerald-600 text-white px-2 py-0.5 rounded-full">출시 LIVE</span>
+        <div class="text-4xl">⛳</div>
+        <div class="font-extrabold mt-3 text-lg">골프총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">해외 골프 그린피·카트·캐디·숙소를 환율 자동 환산 + 1인/팀 N빵으로 즉시 정산.</p>
+        <div class="text-emerald-600 text-xs font-bold mt-3">바로 시작하기 →</div>
+      </a>
+
+      <!-- 준비중 서비스들 -->
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🎾</div>
+        <div class="font-extrabold mt-3 text-lg">테니스총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">코트 대여·레슨비·회식까지, 동호회 회비와 참석자별 분담을 깔끔하게.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🏸</div>
+        <div class="font-extrabold mt-3 text-lg">배드민턴총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">체육관 대관·셔틀콕·간식비를 참석 인원 기준으로 자동 분배.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">⛰️</div>
+        <div class="font-extrabold mt-3 text-lg">산악회총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">버스 대절·산행 식대·뒤풀이를 회원/비회원 회비와 함께 정산.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">✈️</div>
+        <div class="font-extrabold mt-3 text-lg">해외여행총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">항공·숙소·투어를 여러 통화로 입력해도 원화 1인당으로 한 번에.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🍻</div>
+        <div class="font-extrabold mt-3 text-lg">회식총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">1차·2차 금액과 불참자 제외까지, 술자리 N빵을 1초 만에.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🎓</div>
+        <div class="font-extrabold mt-3 text-lg">동창회총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">정기 모임 회비·경조사비·식대를 명단 기준으로 투명하게 관리.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🏕️</div>
+        <div class="font-extrabold mt-3 text-lg">캠핑총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">사이트 비용·장비·식자재 공동 구매를 가족/인원수로 분담.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🎣</div>
+        <div class="font-extrabold mt-3 text-lg">낚시총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">선비(배 비용)·미끼·숙소를 동출 인원으로 나눠 깔끔하게.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">🚴</div>
+        <div class="font-extrabold mt-3 text-lg">자전거총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">라이딩 후 식대·교통·정비비를 참가자별로 간편 정산.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-slate-200 p-5 opacity-90">
+        <span class="absolute top-3 right-3 text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">준비중</span>
+        <div class="text-4xl">💍</div>
+        <div class="font-extrabold mt-3 text-lg">경조사총무</div>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">축의·부의금 모금과 화환·선물 비용을 모임 단위로 정리.</p>
+        <div class="text-slate-400 text-xs font-bold mt-3">곧 출시</div>
+      </div>
+
+      <div class="card-hover relative bg-white rounded-2xl border border-dashed border-slate-300 p-5 flex flex-col items-center justify-center text-center">
+        <div class="text-3xl">➕</div>
+        <div class="font-extrabold mt-2 text-slate-600">더 많은 모임</div>
+        <p class="text-xs text-slate-400 mt-1">볼링·풋살·스키·독서모임… 원하는 모임이 있다면 제안해 주세요.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== 왜 총무N빵 ===== -->
+  <section id="why" class="bg-white border-y border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 py-16">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">왜 총무N빵일까요?</h2>
+        <p class="text-slate-500 mt-3">계산기로는 안 되는, 총무를 위한 진짜 정산 기능</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-3xl">💱</div>
+          <h3 class="font-extrabold mt-3">실시간 환율 자동</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">바트·엔·동·페소를 그날 시세로 원화 환산. 직접 수정도 가능합니다.</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-3xl">🧮</div>
+          <h3 class="font-extrabold mt-3">1인 · 팀(N빵) 분배</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">"각자 낼 것"과 "다 같이 나눌 것"을 토글 한 번으로 자동 분배.</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-3xl">📤</div>
+          <h3 class="font-extrabold mt-3">카톡 공유 · 송금</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">공유 링크로 일행이 로그인 없이 내 금액·계좌 확인 후 바로 송금.</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-3xl">✅</div>
+          <h3 class="font-extrabold mt-3">입금 확인 자동</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">입금되면 체크, 전원 완료 시 자동 정리. 누가 안 보냈는지 한눈에.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 골프장 정보 ===== -->
+  <section id="golf" class="max-w-6xl mx-auto px-5 sm:px-6 py-16">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl font-extrabold">⛳ 인기 해외 골프 여행지 가이드</h2>
+      <p class="text-slate-500 mt-3 max-w-2xl mx-auto">골프총무로 가장 많이 정산되는 인기 골프 여행지를 소개합니다. 그린피와 분위기를 미리 참고하세요.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <article class="card-hover bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="h-24 bg-gradient-to-br from-rose-400 to-orange-400 flex items-center justify-center text-4xl">🇹🇭</div>
+        <div class="p-4">
+          <h3 class="font-extrabold">태국 (방콕·파타야)</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">가성비 최강의 골프 천국. 관리 좋은 명문 코스가 많고, 캐디 문화가 잘 갖춰져 초보 총무도 편합니다. 그린피·카트·캐디피가 분리돼 1인/팀 구분이 특히 중요합니다.</p>
+        </div>
+      </article>
+      <article class="card-hover bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="h-24 bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-4xl">🇻🇳</div>
+        <div class="p-4">
+          <h3 class="font-extrabold">베트남 (다낭·하노이)</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">가까운 비행시간과 합리적 비용으로 떠오르는 인기 지역. 리조트형 코스가 많아 숙소·골프 패키지 정산이 흔합니다.</p>
+        </div>
+      </article>
+      <article class="card-hover bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="h-24 bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-4xl">🇯🇵</div>
+        <div class="p-4">
+          <h3 class="font-extrabold">일본 (후쿠오카·오사카)</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">짧은 비행, 깔끔한 코스 관리, 온천까지. 플레이피에 식사·온천이 포함된 패키지가 많아 항목 구분이 핵심입니다.</p>
+        </div>
+      </article>
+      <article class="card-hover bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="h-24 bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-4xl">🇵🇭</div>
+        <div class="p-4">
+          <h3 class="font-extrabold">필리핀 (클락·세부)</h3>
+          <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">연중 따뜻한 날씨와 영어 소통이 강점. 캐디 팁·카트비 등 현지 현금 지출이 많아 정산 기록이 특히 유용합니다.</p>
+        </div>
+      </article>
+    </div>
+    <p class="text-center text-xs text-slate-400 mt-6">※ 그린피·환율은 시즌과 코스에 따라 다릅니다. 실제 정산은 골프총무에서 항목을 입력해 계산하세요.</p>
+  </section>
+
+  <!-- ===== 커뮤니티 ===== -->
+  <section id="community" class="bg-white border-y border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 py-16">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">💬 총무들의 꿀팁 커뮤니티</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">정산 노하우, 여행지 후기, 모임 운영 팁을 나누는 공간입니다. (오픈 준비중)</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-xs font-bold text-emerald-600">정산 노하우</div>
+          <h3 class="font-bold mt-1">"환율 언제 적용하는 게 이득일까?"</h3>
+          <p class="text-sm text-slate-500 mt-2">카드 전표 환율 vs 현금 환율, 총무들이 실제로 쓰는 기준 정리.</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-xs font-bold text-emerald-600">여행지 후기</div>
+          <h3 class="font-bold mt-1">"4인 다낭 3박4일, 1인당 얼마 들었나"</h3>
+          <p class="text-sm text-slate-500 mt-2">실제 다녀온 총무들의 항목별 지출과 꿀팁 공유.</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div class="text-xs font-bold text-emerald-600">모임 운영</div>
+          <h3 class="font-bold mt-1">"입금 안 하는 멤버, 어떻게 독촉하죠?"</h3>
+          <p class="text-sm text-slate-500 mt-2">감정 상하지 않게 정산받는 총무들의 노하우.</p>
+        </div>
+      </div>
+      <div class="text-center mt-8">
+        <a href="/golfChongmu/guide.html" class="inline-block text-sm font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-5 py-2.5 rounded-xl">골프총무 사용법 가이드 보기 →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 회원 CTA ===== -->
+  <section class="max-w-6xl mx-auto px-5 sm:px-6 py-16">
+    <div class="bg-emerald-700 text-white rounded-3xl px-6 sm:px-10 py-12 text-center">
+      <h2 class="text-2xl sm:text-3xl font-extrabold">지금 무료로 시작하세요</h2>
+      <p class="mt-3 text-emerald-50/90 max-w-xl mx-auto">총무만 가입하면 됩니다. 일행은 공유 링크로 로그인 없이 정산을 확인하고 송금해요. 가입·정산 모두 무료입니다.</p>
+      <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <a href="/golfChongmu/" class="bg-white text-emerald-700 font-extrabold px-7 py-3.5 rounded-2xl shadow hover:bg-emerald-50">회원가입 / 로그인</a>
+        <a href="/golfChongmu/guide.html" class="bg-emerald-600 text-white font-bold px-6 py-3.5 rounded-2xl hover:bg-emerald-500 border border-emerald-400">사용법 먼저 보기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section id="faq" class="max-w-3xl mx-auto px-5 sm:px-6 pb-16">
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-center mb-8">자주 묻는 질문</h2>
+    <div class="space-y-3">
+      <details class="bg-white rounded-2xl border border-slate-200 p-5">
+        <summary class="font-bold cursor-pointer">총무N빵은 무료인가요?</summary>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">네. 회원가입과 정산 기능은 무료입니다. 서비스 운영을 위해 광고가 표시될 수 있습니다.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-slate-200 p-5">
+        <summary class="font-bold cursor-pointer">지금 쓸 수 있는 서비스는 무엇인가요?</summary>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">현재 <b>골프총무</b>가 정식 출시되어 있습니다. 테니스·배드민턴·여행·회식 등 다른 모임 도구는 순차적으로 오픈됩니다.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-slate-200 p-5">
+        <summary class="font-bold cursor-pointer">일행도 가입해야 하나요?</summary>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">아니요. 총무만 가입하면 됩니다. 일행은 공유 링크로 로그인 없이 자기 금액과 계좌를 확인해 송금하면 끝입니다.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-slate-200 p-5">
+        <summary class="font-bold cursor-pointer">모바일에서도 되나요?</summary>
+        <p class="text-sm text-slate-600 mt-2 leading-relaxed">네. 모바일 우선으로 설계되어 스마트폰에서 편하게 쓸 수 있고, 앱 설치가 필요 없습니다.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 푸터 ===== -->
+  <footer class="bg-slate-900 text-slate-300">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 py-12">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div>
+          <div class="flex items-center gap-2 font-extrabold text-white text-lg">
+            <span class="text-2xl">💰</span> 총무<span class="text-emerald-400">N빵</span>
+          </div>
+          <p class="text-sm text-slate-400 mt-2 max-w-md">모든 모임 총무를 위한 무료 N빵 정산 포털. 환율 자동·N빵 분배·카톡 공유까지 한 번에.</p>
+        </div>
+        <nav class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+          <a href="/golfChongmu/" class="hover:text-white">골프총무</a>
+          <a href="/golfChongmu/guide.html" class="hover:text-white">사용법</a>
+          <a href="/golfChongmu/privacy.html" class="hover:text-white">개인정보처리방침</a>
+          <a href="#services" class="hover:text-white">서비스</a>
+          <a href="#faq" class="hover:text-white">FAQ</a>
+        </nav>
+      </div>
+      <div class="border-t border-slate-700 mt-8 pt-6 text-xs text-slate-500 flex flex-col sm:flex-row justify-between gap-2">
+        <span>© 2026 총무N빵 (deoklabs.xyz) · 문의: deok22@gmail.com</span>
+        <span>골프 · 테니스 · 배드민턴 · 산악회 · 해외여행 · 회식 정산 도구</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
