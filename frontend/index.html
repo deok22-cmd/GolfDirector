@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#059669" />
   <title>골프총무 — 골프 비용 N빵 계산기</title>
+  <!-- PWA: 홈 화면 설치 / 전체화면 앱 -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="골프총무" />
   <!-- Google AdSense (계정: deok22@gmail.com / pub-6552756009906366) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6552756009906366" crossorigin="anonymous"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -223,5 +231,15 @@
 
   <script src="mockData.js"></script>
   <script src="main.js"></script>
+  <!-- PWA: service worker 등록 (상대경로 → 루트/서브경로 모두 대응) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function (e) {
+          console.warn("SW 등록 실패:", e);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
